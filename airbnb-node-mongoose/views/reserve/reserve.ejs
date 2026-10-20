@@ -1,0 +1,538 @@
+      <% if (typeof home !== "undefined" && home && home._id) { %>
+      <!-- Page Header: Confirm & Pay State -->
+      <header class="border-b border-pencil pb-8">
+        <h1
+          class="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl"
+        >
+          Confirm and pay
+        </h1>
+        <p class="mt-3 text-base text-ink/70">
+          Review your trip details, add guest contact info, and complete your reservation.
+        </p>
+      </header>
+
+      <!-- Main Reservation Content -->
+      <div class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        <!-- Left Column: Trip & Guest Information -->
+        <div class="space-y-8 lg:col-span-7">
+          <!-- Your Trip Section -->
+          <section aria-labelledby="trip-heading" class="border-b border-pencil pb-8">
+            <h2 id="trip-heading" class="font-display text-xl font-medium text-ink">
+              Your trip
+            </h2>
+
+            <div class="mt-5 space-y-4">
+              <!-- Dates -->
+              <div class="flex items-start justify-between">
+                <div>
+                  <h3 class="text-sm font-semibold text-ink">Dates</h3>
+                  <p class="mt-0.5 text-sm text-ink/70">
+                    <% if (reservationDetails && reservationDetails.checkIn && reservationDetails.checkOut) { %>
+                      <%= reservationDetails.checkIn %> to <%= reservationDetails.checkOut %>
+                      <span class="text-ink/50">(<%= reservationDetails.nights %> <%= reservationDetails.nights === 1 ? 'night' : 'nights' %>)</span>
+                    <% } else { %>
+                      Flexible dates · <%= reservationDetails ? reservationDetails.nights : 5 %> nights
+                    <% } %>
+                  </p>
+                </div>
+                <a
+                  href="/host/home-detail/<%= home._id %>"
+                  class="text-xs font-semibold text-coral underline underline-offset-4 hover:text-ink"
+                >
+                  Edit
+                </a>
+              </div>
+
+              <!-- Guests -->
+              <div class="flex items-start justify-between pt-2">
+                <div>
+                  <h3 class="text-sm font-semibold text-ink">Guests</h3>
+                  <p class="mt-0.5 text-sm text-ink/70">
+                    <%= reservationDetails ? reservationDetails.guests : 1 %> <%= (reservationDetails && reservationDetails.guests === "1") ? 'guest' : 'guests' %>
+                  </p>
+                </div>
+                <a
+                  href="/host/home-detail/<%= home._id %>"
+                  class="text-xs font-semibold text-coral underline underline-offset-4 hover:text-ink"
+                >
+                  Edit
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <!-- Guest Contact Form -->
+          <form
+            action="/reserve/<%= home._id %>"
+            method="POST"
+            class="space-y-8"
+          >
+            <!-- Hidden Trip Inputs -->
+            <input
+              type="hidden"
+              name="checkIn"
+              value="<%= reservationDetails ? reservationDetails.checkIn : '' %>"
+            />
+            <input
+              type="hidden"
+              name="checkOut"
+              value="<%= reservationDetails ? reservationDetails.checkOut : '' %>"
+            />
+            <input
+              type="hidden"
+              name="guests"
+              value="<%= reservationDetails ? reservationDetails.guests : '1' %>"
+            />
+
+            <!-- Contact Information -->
+            <section
+              aria-labelledby="contact-heading"
+              class="border-b border-pencil pb-8"
+            >
+              <h2
+                id="contact-heading"
+                class="font-display text-xl font-medium text-ink"
+              >
+                Guest details
+              </h2>
+
+              <div class="mt-5 space-y-4">
+                <div>
+                  <label
+                    for="guestName"
+                    class="block text-xs font-semibold uppercase text-ink/70"
+                  >
+                    Full name
+                  </label>
+                  <input
+                    type="text"
+                    id="guestName"
+                    name="guestName"
+                    required
+                    placeholder="e.g. Dishant Kumar"
+                    class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none"
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      for="guestEmail"
+                      class="block text-xs font-semibold uppercase text-ink/70"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      type="email"
+                      id="guestEmail"
+                      name="guestEmail"
+                      required
+                      placeholder="you@example.com"
+                      class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="guestPhone"
+                      class="block text-xs font-semibold uppercase text-ink/70"
+                    >
+                      Phone number
+                    </label>
+                    <input
+                      type="tel"
+                      id="guestPhone"
+                      name="guestPhone"
+                      required
+                      placeholder="+91 98765 43210"
+                      class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Payment Simulation -->
+            <section
+              aria-labelledby="payment-heading"
+              class="border-b border-pencil pb-8"
+            >
+              <h2
+                id="payment-heading"
+                class="font-display text-xl font-medium text-ink"
+              >
+                Payment method
+              </h2>
+
+              <div class="mt-5 space-y-3">
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-sm border border-coral bg-coral/5 p-4"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="upi"
+                      checked
+                      class="text-coral focus:ring-coral"
+                    />
+                    <div>
+                      <p class="text-sm font-semibold text-ink">UPI / QR Code</p>
+                      <p class="text-xs text-ink/60">
+                        Instant payment via Google Pay, PhonePe, Paytm
+                      </p>
+                    </div>
+                  </div>
+                  <span class="font-mono text-xs font-medium text-coral">FAST</span>
+                </label>
+
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-sm border border-pencil bg-white p-4 transition-colors hover:border-ink/30"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="card"
+                      class="text-coral focus:ring-coral"
+                    />
+                    <div>
+                      <p class="text-sm font-semibold text-ink">Credit or Debit Card</p>
+                      <p class="text-xs text-ink/60">
+                        Visa, MasterCard, RuPay, Amex
+                      </p>
+                    </div>
+                  </div>
+                </label>
+
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-sm border border-pencil bg-white p-4 transition-colors hover:border-ink/30"
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="arrival"
+                      class="text-coral focus:ring-coral"
+                    />
+                    <div>
+                      <p class="text-sm font-semibold text-ink">Pay on arrival</p>
+                      <p class="text-xs text-ink/60">
+                        Pay cash or card when checking in
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </section>
+
+            <!-- Confirm & Pay CTA -->
+            <div>
+              <p class="mb-4 text-xs text-ink/60">
+                By clicking below, you agree to the host's house rules and standard guest terms.
+              </p>
+              <button
+                type="submit"
+                class="flex min-h-12 w-full items-center justify-center rounded-sm bg-coral px-8 text-base font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4 sm:w-auto"
+              >
+                Confirm and Pay <%= reservationDetails ? reservationDetails.totalAmount : '' %>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Sticky Summary & Price Breakdown -->
+        <aside aria-label="Trip Summary" class="lg:col-span-5">
+          <div
+            class="sticky top-6 rounded-sm border border-pencil bg-white p-6 shadow-sm"
+          >
+            <!-- Home Summary Header -->
+            <div class="flex gap-4">
+              <img
+                src="<%= home.url %>"
+                alt="Photo of <%= home.name %>"
+                class="h-20 w-24 shrink-0 rounded-sm border border-pencil object-cover"
+                loading="lazy"
+              />
+              <div>
+                <p class="text-xs text-ink/60"><%= home.location %></p>
+                <h3 class="font-display text-base font-medium leading-snug text-ink">
+                  <%= home.name %>
+                </h3>
+              </div>
+            </div>
+
+            <hr class="my-6 border-pencil" />
+
+            <!-- Price Details -->
+            <h4 class="font-display text-base font-medium text-ink">
+              Price details
+            </h4>
+
+            <div class="mt-4 space-y-3 text-sm text-ink/70">
+              <div class="flex justify-between">
+                <span>
+                  <%= home.formattedPrice %> × <%= reservationDetails ? reservationDetails.nights : 5 %> nights
+                </span>
+                <span class="text-ink">
+                  <%= reservationDetails ? reservationDetails.nightsTotal : '' %>
+                </span>
+              </div>
+
+              <div class="flex justify-between">
+                <span>Cleaning fee</span>
+                <span class="text-ink">
+                  <%= reservationDetails ? reservationDetails.cleaningFee : '₹1,200' %>
+                </span>
+              </div>
+
+              <div class="flex justify-between">
+                <span>Airbnb service fee</span>
+                <span class="text-ink">
+                  <%= reservationDetails ? reservationDetails.serviceFee : '₹850' %>
+                </span>
+              </div>
+            </div>
+
+            <hr class="my-6 border-pencil" />
+
+            <!-- Total Amount -->
+            <div class="flex items-baseline justify-between text-ink">
+              <span class="text-base font-semibold">Total (INR)</span>
+              <span class="font-display text-2xl font-semibold">
+                <%= reservationDetails ? reservationDetails.totalAmount : '' %>
+              </span>
+            </div>
+
+          </div>
+        </aside>
+      </div>
+
+      <% } else { %>
+      <!-- Page Header: Generic / Add Reservation State -->
+      <header class="border-b border-pencil pb-8">
+        <h1
+          class="font-display text-4xl font-medium leading-tight text-ink sm:text-5xl"
+        >
+          Reserve a stay
+        </h1>
+        <p class="mt-3 text-base text-ink/70">
+          Pick a place and choose your travel dates to begin your reservation.
+        </p>
+      </header>
+
+      <% if (typeof homes !== "undefined" && homes.length > 0) { %>
+      <!-- Quick Reservation Planner & Live Property Preview -->
+      <div class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        <!-- Left: Reservation Form -->
+        <div class="lg:col-span-7">
+          <div class="rounded-sm border border-pencil bg-white p-6 sm:p-8 shadow-sm">
+            <h2 class="font-display text-xl font-medium text-ink">
+              Choose your stay details
+            </h2>
+            <p class="mt-1 text-sm text-ink/60">
+              Select any listed home and travel dates to review pricing and confirm.
+            </p>
+
+            <form action="/reserve" method="GET" class="mt-6 space-y-5">
+              <!-- Property Dropdown -->
+              <div>
+                <label for="homeSelect" class="block text-xs font-semibold uppercase text-ink/70">
+                  Select home
+                </label>
+                <div class="relative mt-1.5">
+                  <select
+                    id="homeSelect"
+                    name="homeId"
+                    required
+                    class="min-h-12 w-full appearance-none rounded-sm border border-pencil bg-paper px-4 py-2.5 pr-10 text-sm font-medium text-ink focus:border-coral focus:outline-none"
+                  >
+                    <% homes.forEach(function(h, index) { %>
+                      <option
+                        value="<%= h._id %>"
+                        data-name="<%= h.name %>"
+                        data-photo="<%= h.url %>"
+                        data-url="<%= h.url %>"
+                        data-price="<%= h.formattedPrice %>"
+                        data-location="<%= h.location %>"
+                        <%= index === 0 ? 'selected' : '' %>
+                      >
+                        <%= h.name %> — <%= h.location %> (<%= h.formattedPrice %> / night)
+                      </option>
+                    <% }); %>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink/60">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Date Picker Range -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="genericCheckIn" class="block text-xs font-semibold uppercase text-ink/70">
+                    Check-in date
+                  </label>
+                  <input
+                    type="date"
+                    id="genericCheckIn"
+                    name="checkIn"
+                    required
+                    class="mt-1.5 min-h-12 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink focus:border-coral focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label for="genericCheckOut" class="block text-xs font-semibold uppercase text-ink/70">
+                    Checkout date
+                  </label>
+                  <input
+                    type="date"
+                    id="genericCheckOut"
+                    name="checkOut"
+                    required
+                    class="mt-1.5 min-h-12 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink focus:border-coral focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Guests Selector -->
+              <div>
+                <label for="genericGuests" class="block text-xs font-semibold uppercase text-ink/70">
+                  Guests
+                </label>
+                <div class="relative mt-1.5">
+                  <select
+                    id="genericGuests"
+                    name="guests"
+                    class="min-h-12 w-full appearance-none rounded-sm border border-pencil bg-paper px-4 py-2.5 pr-10 text-sm font-medium text-ink focus:border-coral focus:outline-none"
+                  >
+                    <option value="1">1 guest</option>
+                    <option value="2" selected>2 guests</option>
+                    <option value="3">3 guests</option>
+                    <option value="4">4 guests</option>
+                    <option value="5">5 guests</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink/60">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit CTA -->
+              <div class="pt-2">
+                <button
+                  type="submit"
+                  class="flex min-h-12 w-full items-center justify-center rounded-sm bg-coral px-8 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+                >
+                  Continue to reservation &rarr;
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Dynamic Live Preview Card -->
+        <aside aria-label="Selected home preview" class="lg:col-span-5">
+          <div class="sticky top-6 rounded-sm border border-pencil bg-white p-6 shadow-sm">
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink/50">Selected stay preview</p>
+            <div class="mt-4 overflow-hidden rounded-sm border border-pencil bg-mist">
+              <img
+                id="previewPhoto"
+                src="<%= homes[0].url %>"
+                alt="Selected home photo"
+                class="aspect-16/10 w-full object-cover transition-opacity duration-200"
+              />
+            </div>
+            <div class="mt-4">
+              <p id="previewLocation" class="text-xs text-ink/60"><%= homes[0].location %></p>
+              <h3 id="previewName" class="font-display text-lg font-medium text-ink">
+                <%= homes[0].name %>
+              </h3>
+              <p class="mt-2 text-sm text-ink">
+                <span id="previewPrice" class="font-semibold"><%= homes[0].formattedPrice %></span>
+                <span class="text-xs text-ink/60"> / night</span>
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <% } else { %>
+      <!-- Empty State -->
+      <div class="max-w-xl py-12">
+        <h2 class="font-display text-2xl font-medium text-ink">
+          No stays available to reserve
+        </h2>
+        <p class="mt-3 text-sm leading-6 text-ink/60">
+          There are currently no homes listed in the catalog. List a home to start taking reservations.
+        </p>
+        <a
+          class="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+          href="/host/add-home"
+        >
+          List a home
+        </a>
+      </div>
+      <% } %>
+      <% } %>
+
+    <script>
+      (function () {
+        // Date helpers for generic reservation builder
+        const checkIn = document.getElementById("genericCheckIn");
+        const checkOut = document.getElementById("genericCheckOut");
+        if (checkIn && checkOut) {
+          const today = new Date();
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const fiveDaysLater = new Date(today);
+          fiveDaysLater.setDate(fiveDaysLater.getDate() + 6);
+
+          const formatDate = (d) => d.toISOString().split("T")[0];
+          checkIn.value = formatDate(tomorrow);
+          checkIn.min = formatDate(today);
+          checkOut.value = formatDate(fiveDaysLater);
+          checkOut.min = formatDate(tomorrow);
+
+          checkIn.addEventListener("change", function () {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOut.min = formatDate(nextDay);
+            if (new Date(checkOut.value) <= new Date(this.value)) {
+              checkOut.value = formatDate(nextDay);
+            }
+          });
+        }
+
+        // Home selection live preview updater
+        const homeSelect = document.getElementById("homeSelect");
+        if (homeSelect) {
+          const previewPhoto = document.getElementById("previewPhoto");
+          const previewName = document.getElementById("previewName");
+          const previewLocation = document.getElementById("previewLocation");
+          const previewPrice = document.getElementById("previewPrice");
+
+          function updatePreview() {
+            const selected = homeSelect.options[homeSelect.selectedIndex];
+            if (selected) {
+              const photo = selected.dataset.photo || selected.dataset.url;
+              if (previewPhoto && photo) {
+                previewPhoto.src = photo;
+                if (selected.dataset.name) {
+                  previewPhoto.alt = "Photo of " + selected.dataset.name;
+                }
+              }
+              if (previewName && selected.dataset.name) previewName.textContent = selected.dataset.name;
+              if (previewLocation && selected.dataset.location) previewLocation.textContent = selected.dataset.location;
+              if (previewPrice && selected.dataset.price) previewPrice.textContent = selected.dataset.price;
+            }
+          }
+
+          homeSelect.addEventListener("change", updatePreview);
+          updatePreview();
+        }
+      })();
+    </script>

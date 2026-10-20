@@ -1,0 +1,90 @@
+      <section class="w-full max-w-2xl">
+        <h1 class="font-display text-4xl font-medium sm:text-5xl">
+          Edit listing
+        </h1>
+        <p class="mt-4 max-w-xl text-base leading-7 text-ink/70">
+          Update the name, price, or photo for this home.
+        </p>
+        <% if (typeof formError !== "undefined" && formError) { %>
+        <p
+          class="mt-6 max-w-xl rounded-sm border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-ink"
+          role="alert"
+        >
+          <%= formError %>
+        </p>
+        <% } %>
+        <form
+          class="mt-8 max-w-xl space-y-6"
+          action="/host/edit-home/<%= formValues._id %>"
+          method="POST"
+        >
+          <div class="space-y-2">
+            <label class="block text-sm font-medium" for="name"
+              >Home name</label
+            >
+            <input
+              class="min-h-12 w-full rounded-sm border border-pencil bg-paper px-4 text-base placeholder:text-ink/40 focus:border-coral focus:outline-none"
+              id="name"
+              type="text"
+              name="name"
+              placeholder="e.g. The Garden House"
+              value="<%= formValues.name || '' %>"
+              required
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium" for="location"
+              >Location</label
+            >
+            <input
+              class="min-h-12 w-full rounded-sm border border-pencil bg-paper px-4 text-base placeholder:text-ink/40 focus:border-coral focus:outline-none"
+              id="location"
+              type="text"
+              name="location"
+              placeholder="City or neighborhood"
+              value="<%= formValues.location || '' %>"
+              required
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium" for="price"
+              >Price per night (INR)</label
+            >
+            <input
+              class="min-h-12 w-full rounded-sm border border-pencil bg-paper px-4 text-base placeholder:text-ink/40 focus:border-coral focus:outline-none"
+              id="price"
+              type="number"
+              name="price"
+              min="0.01"
+              step="0.01"
+              placeholder="e.g. 2500"
+              value="<%= formValues.price || '' %>"
+              required
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium" for="photo"
+              >Cover photo URL</label
+            >
+            <input
+              class="min-h-12 w-full rounded-sm border border-pencil bg-paper px-4 text-base placeholder:text-ink/40 focus:border-coral focus:outline-none"
+              id="photo"
+              type="url"
+              name="photo"
+              placeholder="https://example.com/home.jpg"
+              value="<%= formValues.url || '' %>"
+              aria-describedby="photo-help"
+              required
+            />
+            <p id="photo-help" class="text-xs text-ink/60">
+              Provide a direct image link starting with https://.
+            </p>
+          </div>
+          <button
+            class="min-h-12 w-full rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4 sm:w-auto"
+            type="submit"
+          >
+            Save changes
+          </button>
+        </form>
+      </section>

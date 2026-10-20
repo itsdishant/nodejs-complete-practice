@@ -1,0 +1,106 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #ffffff;
+  --color-ink: #262626;
+  --color-coral: #ff5a5f;
+  --color-mist: #eaf3f0;
+  --color-pencil: #e5e7e5;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+@layer components {
+  .nav-link {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-pencil bg-white px-3 py-1.5 text-xs font-medium text-ink/80 transition-all duration-150 sm:gap-2 sm:px-3.5 sm:py-2 sm:text-xs md:px-4 md:py-2 md:text-sm;
+  }
+
+  .nav-link svg {
+    @apply h-3.5 w-3.5 shrink-0 text-ink/60 transition-colors sm:h-4 sm:w-4;
+  }
+
+  .nav-link:hover {
+    background-color: var(--color-mist);
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .nav-link:hover svg {
+    color: var(--color-ink);
+  }
+
+  .nav-link.nav-link-active {
+    background-color: var(--color-coral);
+    border-color: var(--color-coral);
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .nav-link.nav-link-active svg {
+    color: #ffffff;
+  }
+
+  .nav-link.nav-link-active:hover {
+    background-color: var(--color-coral);
+    border-color: var(--color-coral);
+    color: #ffffff;
+  }
+
+  /* Standout host CTA */
+  .nav-cta {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-ink bg-ink px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:border-coral hover:bg-coral hover:shadow-sm sm:gap-2 sm:px-4 sm:py-2 sm:text-xs md:px-5 md:py-2 md:text-sm;
+  }
+
+  .nav-cta svg {
+    @apply h-3.5 w-3.5 shrink-0 text-coral transition-colors duration-200 sm:h-4 sm:w-4;
+  }
+
+  .nav-cta:hover svg {
+    color: #ffffff;
+  }
+
+  .nav-cta.nav-cta-active {
+    background-color: var(--color-coral);
+    border-color: var(--color-coral);
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(255, 90, 95, 0.25);
+  }
+
+  .nav-cta.nav-cta-active svg {
+    color: #ffffff;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-coral);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

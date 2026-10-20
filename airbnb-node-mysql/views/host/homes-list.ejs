@@ -1,0 +1,41 @@
+      <section aria-labelledby="homes-heading" class="w-full">
+        <div
+          class="border-b border-pencil pb-8"
+        >
+          <h1
+            id="homes-heading"
+            class="font-display text-4xl font-medium leading-tight sm:text-5xl"
+          >
+            Explore stays
+          </h1>
+          <p class="mt-3 text-base text-ink/70">
+            Browse flats, cottages, and family homes hosted across India.
+          </p>
+        </div>
+        <% if (homes.length > 0) { %>
+        <div class="mt-8">
+          <p class="mb-5 text-sm text-ink/60">
+            <%= homes.length %> <%= homes.length === 1 ? "home" : "homes" %>
+          </p>
+          <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <% for (const home of homes) { %>
+            <li class="flex flex-col overflow-hidden rounded-sm border border-pencil bg-white">
+              <%- include("../shared/single-home-card", {home: home}) %>
+            </li>
+            <% } %>
+          </ul>
+        </div>
+        <% } else { %>
+        <div class="max-w-xl py-12">
+          <h2 class="font-display text-2xl font-medium">No stays listed yet</h2>
+          <p class="mt-3 text-sm leading-6 text-ink/60">
+            Check back shortly, or list your own space to get started.
+          </p>
+          <a
+            class="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+            href="/host/add-home"
+            >List your home</a
+          >
+        </div>
+        <% } %>
+      </section>

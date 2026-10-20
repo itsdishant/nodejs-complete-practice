@@ -1,0 +1,246 @@
+      <!-- Home Title & Header Meta -->
+      <header class="border-b border-pencil pb-6">
+        <h1
+          class="font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl lg:text-5xl"
+        >
+          <%= home.name %>
+        </h1>
+        <div
+          class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-ink/70"
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1">
+              <svg
+                class="h-4 w-4 text-ink/50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <%= home.location %>
+            </span>
+          </div>
+
+          <!-- Save / Unsave Favourite Button -->
+          <%- include("../shared/add-remove-favourite-form", { home: home, showLabel: true }) %>
+        </div>
+      </header>
+
+      <!-- Featured Image Banner -->
+      <section aria-label="Property Photos" class="mt-6">
+        <div class="overflow-hidden rounded-sm border border-pencil bg-mist">
+          <img
+            class="aspect-video max-h-135 w-full object-cover"
+            src="<%= home.url %>"
+            alt="Photograph of <%= home.name %> in <%= home.location %>"
+            loading="eager"
+          />
+        </div>
+      </section>
+
+      <!-- Main Content Grid -->
+      <div class="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
+        <!-- Left Column: Details & Information -->
+        <section aria-labelledby="details-heading" class="lg:col-span-2">
+          <h2 id="details-heading" class="sr-only">Home Details</h2>
+
+          <!-- Hosted Summary -->
+          <div
+            class="flex items-center justify-between border-b border-pencil pb-6"
+          >
+            <div>
+              <h3 class="font-display text-xl font-medium sm:text-2xl text-ink">
+                Entire home in <%= home.location %>
+              </h3>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="border-b border-pencil py-8">
+            <h3 class="font-display text-xl font-medium text-ink">
+              About this home
+            </h3>
+            <p class="mt-4 text-base leading-7 text-ink/80">
+              Welcome to <%= home.name %> in <%= home.location %>. This is a
+              comfortable place to stay with plenty of room to relax, whether
+              you are traveling for work, visiting family, or taking a weekend
+              trip.
+            </p>
+            <p class="mt-3 text-base leading-7 text-ink/80">
+              Local cafes, small groceries, and transit stops are an easy walk
+              away, making it simple to get around the neighborhood.
+            </p>
+          </div>
+
+          <!-- Structured Details -->
+          <div class="py-8">
+            <h3 class="font-display text-xl font-medium text-ink">
+              Listing details
+            </h3>
+            <dl class="mt-4 divide-y divide-pencil border-y border-pencil">
+              <div class="py-3 sm:flex sm:gap-8">
+                <dt class="w-36 shrink-0 text-sm text-ink/60">Location</dt>
+                <dd class="mt-1 text-sm font-medium text-ink sm:mt-0">
+                  <%= home.location %>
+                </dd>
+              </div>
+              <div class="py-3 sm:flex sm:gap-8">
+                <dt class="w-36 shrink-0 text-sm text-ink/60">
+                  Price per night
+                </dt>
+                <dd class="mt-1 text-sm font-medium text-ink sm:mt-0">
+                  <%= typeof home.formattedPrice !== "undefined" ?
+                  home.formattedPrice : "₹" + home.price %>
+                </dd>
+              </div>
+              <div class="py-3 sm:flex sm:gap-8">
+                <dt class="w-36 shrink-0 text-sm text-ink/60">Photo URL</dt>
+                <dd class="mt-1 break-all text-sm font-medium text-ink sm:mt-0">
+                  <a
+                    href="<%= home.url %>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-coral underline underline-offset-4 hover:text-ink"
+                  >
+                    <%= home.url %>
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <!-- Right Column: Sticky Booking Widget -->
+        <aside aria-label="Reservation" class="lg:col-span-1">
+          <div
+            class="sticky top-6 rounded-sm border border-pencil bg-white p-6 shadow-sm"
+          >
+            <!-- Price Display -->
+            <div class="flex items-baseline justify-between">
+              <div>
+                <span
+                  class="font-display text-2xl font-semibold text-ink sm:text-3xl"
+                >
+                  <%= typeof home.formattedPrice !== "undefined" ?
+                  home.formattedPrice : "₹" + home.price %>
+                </span>
+                <span class="text-sm text-ink/60">/ night</span>
+              </div>
+            </div>
+
+            <!-- Booking Form -->
+            <form
+              action="/reserve/<%= home.id %>"
+              method="GET"
+              class="mt-5"
+            >
+              <div class="rounded-sm border border-pencil">
+                <div
+                  class="grid grid-cols-2 divide-x divide-pencil border-b border-pencil"
+                >
+                  <label for="checkIn" class="block cursor-pointer p-2.5">
+                    <span
+                      class="block text-[10px] font-semibold uppercase text-ink/60"
+                    >
+                      Check-in
+                    </span>
+                    <input
+                      type="date"
+                      id="checkIn"
+                      name="checkIn"
+                      class="mt-0.5 block w-full bg-transparent text-xs font-medium text-ink focus:outline-none"
+                      required
+                    />
+                  </label>
+                  <label for="checkOut" class="block cursor-pointer p-2.5">
+                    <span
+                      class="block text-[10px] font-semibold uppercase text-ink/60"
+                    >
+                      Checkout
+                    </span>
+                    <input
+                      type="date"
+                      id="checkOut"
+                      name="checkOut"
+                      class="mt-0.5 block w-full bg-transparent text-xs font-medium text-ink focus:outline-none"
+                      required
+                    />
+                  </label>
+                </div>
+                <label for="guests" class="block cursor-pointer p-2.5">
+                  <span
+                    class="block text-[10px] font-semibold uppercase text-ink/60"
+                  >
+                    Guests
+                  </span>
+                  <select
+                    id="guests"
+                    name="guests"
+                    class="mt-0.5 block w-full bg-transparent text-xs font-medium text-ink focus:outline-none"
+                  >
+                    <option value="1">1 guest</option>
+                    <option value="2">2 guests</option>
+                    <option value="3">3 guests</option>
+                    <option value="4">4 guests</option>
+                    <option value="5">5 guests</option>
+                  </select>
+                </label>
+              </div>
+
+              <!-- Reserve Button -->
+              <button
+                type="submit"
+                class="mt-4 flex min-h-12 w-full items-center justify-center rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+              >
+                Reserve
+              </button>
+
+              <p class="mt-3 text-center text-xs text-ink/50">
+                You won't be charged yet
+              </p>
+            </form>
+          </div>
+        </aside>
+      </div>
+
+    <script>
+      (function () {
+        const checkInInput = document.getElementById("checkIn");
+        const checkOutInput = document.getElementById("checkOut");
+        if (checkInInput && checkOutInput) {
+          const today = new Date();
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const fiveDaysLater = new Date(today);
+          fiveDaysLater.setDate(fiveDaysLater.getDate() + 6);
+
+          const formatDate = (d) => d.toISOString().split("T")[0];
+          checkInInput.value = formatDate(tomorrow);
+          checkInInput.min = formatDate(today);
+          checkOutInput.value = formatDate(fiveDaysLater);
+          checkOutInput.min = formatDate(tomorrow);
+
+          checkInInput.addEventListener("change", function () {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutInput.min = formatDate(nextDay);
+            if (new Date(checkOutInput.value) <= new Date(this.value)) {
+              checkOutInput.value = formatDate(nextDay);
+            }
+          });
+        }
+      })();
+    </script>
