@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { formatInr } = require("../utils/formatter");
+const reserve = require("./reserveModel");
 
 const homeSchema = new mongoose.Schema(
   {
@@ -11,6 +12,15 @@ const homeSchema = new mongoose.Schema(
   },
   { versionKey: false },
 );
+
+// Delete all associated bookings when a home is deleted
+homeSchema.post("findOneAndDelete", async function (doc) {
+  if (doc) {
+    await reserve.deleteMany({
+      $or: [{ homeId: doc._id }, { homeId: doc._id.toString() }],
+    });
+  }
+});
 
 const Home = mongoose.model("Home", homeSchema);
 

@@ -5,7 +5,11 @@ const SERVICE_FEE = 850;
 
 const bookingSchema = new mongoose.Schema(
   {
-    homeId: { type: String, required: true },
+    homeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Home",
+      required: true,
+    },
     fullName: { type: String, required: true },
     email: { type: String, required: true },
     phoneNumber: { type: String, required: true },
