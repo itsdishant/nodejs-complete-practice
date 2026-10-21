@@ -1,23 +1,45 @@
-module.exports = class Home {
-  constructor(name, location, price, url, isFavourite = false) {
-    this.name = name;
-    this.location = location;
-    this.price = price;
-    this.url = url;
-    this.isFavourite = isFavourite;
-  }
+const mongoose = require("mongoose");
+const { formatInr } = require("../utils/formatter");
 
-  async save() {}
+const homeSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    location: { type: String, required: true },
+    price: { type: Number, required: true },
+    url: { type: String, required: true },
+    isFavourite: { type: Boolean, default: false },
+  },
+  { versionKey: false },
+);
 
-  static async getAllHomes() {}
+const Home = mongoose.model("Home", homeSchema);
 
-  static async getAllFavouriteHomes() {}
-
-  static async toggleFavouriteHome(homeId, isFavourite) {}
-
-  static async getHomeById(id) {}
-
-  static async updateHome(id, updatedData) {}
-
-  static async deleteHome(id) {}
+Home.getAllHomes = async function () {
+  const homes = await Home.find().sort({ _id: -1 });
+  return homes.map((home) => ({
+    _id: home._id.toString(),
+    name: home.name,
+    location: home.location,
+    price: home.price,
+    url: home.url,
+    isFavourite: home.isFavourite,
+    formattedPrice: formatInr.format(home.price),
+  }));
 };
+
+Home.getHomeById = async function (id) {
+  const home = await Home.findById(id);
+  return [
+    {
+      _id: home._id.toString(),
+      name: home.name,
+      location: home.location,
+      price: home.price,
+      url: home.url,
+      isFavourite: home.isFavourite,
+      formattedPrice: formatInr.format(home.price),
+    },
+  ];
+};
+
+module.exports = Home;

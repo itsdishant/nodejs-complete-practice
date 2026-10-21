@@ -3,10 +3,11 @@ const homeController = require("../controllers/appController").homeController;
 const reserveController =
   require("../controllers/appController").reserveController;
 const Home = require("../models/homeModel");
-const Reserve = require("../models/reserveModel");
+const Booking = require("../models/reserveModel");
 const { formatInr } = require("../utils/formatter");
+const { ObjectId } = require("mongodb");
 
-const { CLEANING_FEE, SERVICE_FEE } = Reserve;
+const { CLEANING_FEE, SERVICE_FEE } = Booking;
 
 const reserveRouter = express.Router();
 
@@ -141,37 +142,82 @@ reserveRouter.post("/reserve/:id", async (req, res) => {
   const nightsTotal = (home[0].price || 0) * nights;
   const totalAmount = nightsTotal + cleaningFee + serviceFee;
 
-  const reservation = new Reserve(
-    req.body.fullName || req.body.guestName,
-    req.body.email || req.body.guestEmail,
-    req.body.phoneNumber || req.body.guestPhone,
-    id,
+  const newBooking = new Booking({
+    fullName: req.body.fullName || req.body.guestName,
+    email: req.body.email || req.body.guestEmail,
+    phoneNumber: req.body.phoneNumber || req.body.guestPhone,
+    homeId: new ObjectId(home[0]._id),
     checkIn,
     checkOut,
-    totalAmount,
-    req.body.paymentMethod || "upi",
-    guests,
-  );
+    numberOfGuests: guests,
+    totalPrice: totalAmount,
+    paymentMethod: req.body.paymentMethod || "upi",
+  });
 
-  const bookingId = await reservation.makeReservation();
+  const savedBooking = await newBooking.save();
 
-  res.redirect(`/bookings/${bookingId}`);
+  res.redirect(`/bookings/${savedBooking._id}`);
 });
 
 // GET: Display user's bookings
 reserveRouter.get("/bookings", async (req, res) => {
-  const bookings = await Reserve.getAllBookings();
-  reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
-    bookings,
-  });
+  try {
+    const rawBookings = await Booking.find().sort({ createdAt: -1 });
+    const bookings = await Promise.all(
+      rawBookings.map(async (booking) => {
+        let home = null;
+        try {
+          home = await Home.findById(booking.homeId);
+        } catch {
+          home = null;
+        }
+
+        const bookingObj = booking.toObject ? booking.toObject() : booking;
+
+        return {
+          ...bookingObj,
+          _id: booking._id.toString(),
+          bookingId: booking._id.toString(),
+          homeName: home ? home.name : "Stay",
+          location: home ? home.location : "Location unavailable",
+          photo: home ? home.url : "",
+          checkIn: booking.checkIn
+            ? new Date(booking.checkIn).toISOString().split("T")[0]
+            : "",
+          checkOut: booking.checkOut
+            ? new Date(booking.checkOut).toISOString().split("T")[0]
+            : "",
+          numberOfGuests: booking.numberOfGuests || 1,
+          totalPrice: booking.totalPrice,
+          totalAmount: booking.totalPrice,
+          formattedPrice: formatInr.format(booking.totalPrice || 0),
+        };
+      }),
+    );
+
+    reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
+      bookings,
+    });
+  } catch (err) {
+    console.error("Error fetching bookings:", err);
+    reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
+      bookings: [],
+    });
+  }
 });
 
 // GET: Booking details page
 reserveRouter.get("/bookings/:id", async (req, res) => {
   const { id } = req.params;
-  const booking = await Reserve.getBookingById(id);
 
-  if (!booking) {
+  let singleBooking;
+  try {
+    singleBooking = await Booking.findById(id);
+  } catch {
+    singleBooking = null;
+  }
+
+  if (!singleBooking) {
     return homeController(
       res.status(404),
       "404",
@@ -180,13 +226,71 @@ reserveRouter.get("/bookings/:id", async (req, res) => {
     );
   }
 
+  let home = null;
+  try {
+    home = await Home.findById(singleBooking.homeId);
+  } catch {
+    home = null;
+  }
+
+  const bookingObj = singleBooking.toObject
+    ? singleBooking.toObject()
+    : singleBooking;
+  const nights =
+    singleBooking.checkIn && singleBooking.checkOut
+      ? Math.max(
+          1,
+          Math.round(
+            (new Date(singleBooking.checkOut) -
+              new Date(singleBooking.checkIn)) /
+              86400000,
+          ),
+        )
+      : 1;
+  const paidNightly = Math.round(
+    (singleBooking.totalPrice - CLEANING_FEE - SERVICE_FEE) / nights,
+  );
+  const nightlyRate = paidNightly > 0 ? paidNightly : home?.price || 0;
+  const paymentLabels = {
+    upi: "UPI",
+    card: "Card",
+    arrival: "Pay at arrival",
+  };
+  const money = (n) => formatInr.format(n || 0);
+
+  const formattedBooking = {
+    ...bookingObj,
+    _id: singleBooking._id.toString(),
+    bookingId: singleBooking._id.toString(),
+    homeName: home ? home.name : "Stay",
+    location: home ? home.location : "Location unavailable",
+    photo: home ? home.url : "",
+    checkIn: singleBooking.checkIn
+      ? new Date(singleBooking.checkIn).toISOString().split("T")[0]
+      : "",
+    checkOut: singleBooking.checkOut
+      ? new Date(singleBooking.checkOut).toISOString().split("T")[0]
+      : "",
+    nights,
+    numberOfGuests: singleBooking.numberOfGuests,
+    totalAmount: singleBooking.totalPrice,
+    formattedTotal: money(singleBooking.totalPrice),
+    formattedNightlyRate: money(nightlyRate),
+    formattedNightsTotal: money(nightlyRate * nights),
+    formattedCleaningFee: money(CLEANING_FEE),
+    formattedServiceFee: money(SERVICE_FEE),
+    paymentMethod: singleBooking.paymentMethod,
+    paymentMethodLabel:
+      paymentLabels[singleBooking.paymentMethod] || singleBooking.paymentMethod,
+  };
+
   reserveController(
     res,
     "booking-details",
     `Booking Details | Airbnb`,
     req.path,
     {
-      booking,
+      booking: formattedBooking,
     },
   );
 });

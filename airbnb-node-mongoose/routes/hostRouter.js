@@ -15,7 +15,7 @@ hostRouter.get("/add-home", (req, res) => {
 });
 
 // POST: Validate and save a new home listing
-hostRouter.post("/add-home", async (req, res) => {
+hostRouter.post("/add-home", (req, res) => {
   const { homeName, location, price, photo } = req.body;
   const numericPrice = Number(price);
 
@@ -43,21 +43,31 @@ hostRouter.post("/add-home", async (req, res) => {
     );
   }
 
-  await new Home(homeName, location, numericPrice, photoUrl.toString()).save();
+  const newHome = new Home({
+    name: homeName,
+    location,
+    price: numericPrice,
+    url: photoUrl.toString(),
+  });
 
-  sharedController(
-    res,
-    "add-edit-home-success",
-    "Airbnb | Listing published",
-    req.path,
-    {
-      homeName,
-      location,
-      formattedPrice: formatInr.format(numericPrice),
-      photo: photoUrl.toString(),
-      isEdit: false,
-    },
-  );
+  newHome
+    .save()
+    .then(() => {
+      sharedController(
+        res,
+        "add-edit-home-success",
+        "Airbnb | Listing published",
+        req.path,
+        {
+          homeName,
+          location,
+          formattedPrice: formatInr.format(numericPrice),
+          photo: photoUrl.toString(),
+          isEdit: false,
+        },
+      );
+    })
+    .catch((error) => console.error(error));
 });
 
 // GET: Display edit home form
@@ -110,7 +120,7 @@ hostRouter.post("/edit-home/:id", async (req, res) => {
     );
   }
 
-  await Home.updateHome(id, {
+  await Home.findByIdAndUpdate(id, {
     name,
     location,
     price: numericPrice,
@@ -146,17 +156,14 @@ hostRouter.post("/delete-home/:id", async (req, res) => {
     );
   }
 
-  await Home.deleteHome(id);
+  await Home.findByIdAndDelete(id);
 
   res.redirect("/host/host-homes-list");
 });
 
 // GET: Display host homes list table
 hostRouter.get("/host-homes-list", async (req, res) => {
-  const homes = (await Home.getAllHomes()).map((home) => ({
-    ...home,
-    formattedPrice: formatInr.format(home.price),
-  }));
+  const homes = await Home.getAllHomes();
 
   hostController(res, "host-home-list", "Airbnb | Your listings", req.path, {
     homes,
@@ -165,10 +172,7 @@ hostRouter.get("/host-homes-list", async (req, res) => {
 
 // GET: Display catalog of all homes
 hostRouter.get("/homes-list", async (req, res) => {
-  const homes = (await Home.getAllHomes()).map((home) => ({
-    ...home,
-    formattedPrice: formatInr.format(home.price),
-  }));
+  const homes = await Home.getAllHomes();
 
   hostController(res, "homes-list", "Airbnb | Explore stays", req.path, {
     homes,
@@ -201,12 +205,9 @@ hostRouter.get("/home-detail/:id", async (req, res) => {
 
 // GET: Display user's favourite / saved homes
 hostRouter.get("/favourites", async (req, res) => {
-  const favouriteList = (await Home.getAllFavouriteHomes()).map((home) => {
-    return {
-      ...home,
-      formattedPrice: formatInr.format(home.price),
-    };
-  });
+  const favouriteList = (await Home.getAllHomes()).filter(
+    (home) => home.isFavourite,
+  );
 
   hostController(res, "favourites", "Airbnb | Saved homes", req.path, {
     favouriteList,
@@ -227,7 +228,9 @@ hostRouter.post("/favourites/:id", async (req, res) => {
     );
   }
 
-  await Home.toggleFavouriteHome(id, home[0].isFavourite);
+  await Home.findByIdAndUpdate(id, {
+    isFavourite: !home[0].isFavourite,
+  });
 
   res.redirect("/host/favourites");
 });
