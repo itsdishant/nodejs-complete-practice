@@ -1,0 +1,56 @@
+<section class="w-full max-w-2xl">
+  <h1 class="font-display text-4xl font-medium sm:text-5xl">
+    <%= isEdit ? "Listing updated" : "Listing published" %>
+  </h1>
+  <p class="mt-4 max-w-xl text-base leading-7 text-ink/70">
+    <% if (isEdit) { %>
+      Your updates are saved and live for guests to view.
+    <% } else { %>
+      Your home is now live and ready for guests to explore.
+    <% } %>
+  </p>
+  <dl class="mt-8 max-w-xl divide-y divide-pencil border-y border-pencil">
+    <div class="py-4 sm:flex sm:gap-8">
+      <dt class="w-32 shrink-0 text-sm text-ink/60">Home name</dt>
+      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
+        <%= homeName %>
+      </dd>
+    </div>
+    <div class="py-4 sm:flex sm:gap-8">
+      <dt class="w-32 shrink-0 text-sm text-ink/60">Location</dt>
+      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
+        <%= location %>
+      </dd>
+    </div>
+    <div class="py-4 sm:flex sm:gap-8">
+      <dt class="w-32 shrink-0 text-sm text-ink/60">Price</dt>
+      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
+        <%= formattedPrice %> per night
+      </dd>
+    </div>
+    <div class="py-4 sm:flex sm:gap-8">
+      <dt class="w-32 shrink-0 text-sm text-ink/60">Photo</dt>
+      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
+        <a
+          class="text-coral underline underline-offset-4"
+          href="<%= photo %>"
+          target="_blank"
+          rel="noopener noreferrer"
+          >View photo</a
+        >
+      </dd>
+    </div>
+  </dl>
+  <div class="mt-8 flex flex-wrap items-center gap-4">
+    <a
+      class="inline-flex min-h-12 items-center justify-center rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+      href="/host/host-homes-list"
+      >Manage your listings</a
+    >
+    <a
+      class="inline-flex min-h-12 items-center justify-center rounded-sm border border-pencil bg-white px-6 text-sm font-semibold text-ink transition-colors hover:border-ink hover:bg-mist focus-visible:outline-offset-4"
+      href="/host/homes-list"
+      >Browse all stays</a
+    >
+  </div>
+</section>
