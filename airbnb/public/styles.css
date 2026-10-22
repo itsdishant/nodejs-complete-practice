@@ -8,7 +8,6 @@
       "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
       "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: "DM Mono", monospace;
-    --color-emerald-50: oklch(97.9% 0.021 166.113);
     --color-emerald-200: oklch(90.5% 0.093 164.15);
     --color-emerald-800: oklch(43.2% 0.095 166.913);
     --color-white: #fff;

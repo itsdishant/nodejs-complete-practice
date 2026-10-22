@@ -3,7 +3,6 @@ const ejs = require("ejs");
 
 const VIEWS = path.join(__dirname, "..", "views");
 
-// ponytail: every view is just page content; the document shell lives in
 // partials/content.ejs, so no page repeats the doctype/head/header/main boilerplate.
 async function renderPage(res, view, title, currentPath, data = {}) {
   const locals = { ...res.locals, title, currentPath, ...data };
