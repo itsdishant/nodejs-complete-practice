@@ -35,7 +35,7 @@
           </div>
 
           <!-- Save / Unsave Favourite Button -->
-          <%- include("../shared/add-remove-favourite-form", { home: home, showLabel: true }) %>
+          <%- include("../shared/toggle-wishlist-form", { home: home, showLabel: true }) %>
         </div>
       </header>
 
@@ -145,7 +145,7 @@
             <form
               action="/reserve/<%= home._id %>"
               method="GET"
-              class="mt-5"
+              class="mx-auto mt-5 w-full max-w-md"
             >
               <div class="rounded-sm border border-pencil">
                 <div

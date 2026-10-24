@@ -1,20 +1,20 @@
-      <section class="w-full max-w-2xl">
+      <section class="mx-auto w-full max-w-md text-center">
         <h1 class="font-display text-4xl font-medium sm:text-5xl">
           Add a home
         </h1>
-        <p class="mt-4 max-w-xl text-base leading-7 text-ink/70">
+        <p class="mx-auto mt-4 max-w-xl text-base leading-7 text-ink/70">
           Share a few basic details about your space to create your listing.
         </p>
         <% if (typeof formError !== "undefined" && formError) { %>
         <p
-          class="mt-6 max-w-xl rounded-sm border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-ink"
+          class="mx-auto mt-6 max-w-xl rounded-sm border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-ink"
           role="alert"
         >
           <%= formError %>
         </p>
         <% } %>
         <form
-          class="mt-8 max-w-xl space-y-6"
+          class="mt-8 w-full space-y-6 rounded-sm border border-pencil bg-white p-6 text-left shadow-sm"
           action="/host/add-home"
           method="POST"
         >

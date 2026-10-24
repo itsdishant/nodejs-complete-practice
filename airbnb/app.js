@@ -46,7 +46,7 @@ app.use((err, req, res) => {
 
 mongoose
   .connect(process.env.MONGODB_URI, {
-    dbName: "airbnb",
+    dbName: "airbnb-prod",
   })
   .then(() => {
     app.listen(port, () => {

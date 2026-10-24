@@ -4,7 +4,7 @@ const homeController = require("../controllers/appController").homeController;
 const sharedController =
   require("../controllers/appController").sharedController;
 const Home = require("../models/homeModel");
-const renderAddHomeError = require("../helpers/error-render");
+const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
 
 const hostRouter = express.Router();
@@ -20,10 +20,13 @@ hostRouter.post("/add-home", (req, res) => {
   const numericPrice = Number(price);
 
   if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-    return renderAddHomeError(
+    return renderFormError(
       res,
-      req.body,
+      "add-home",
+      "Airbnb | List your home",
+      "host",
       "Enter a valid price greater than ₹0.",
+      req,
     );
   }
 
@@ -32,14 +35,24 @@ hostRouter.post("/add-home", (req, res) => {
   try {
     photoUrl = new URL(photo);
   } catch {
-    return renderAddHomeError(res, req.body, "Enter a valid photo URL.");
+    return renderFormError(
+      res,
+      "add-home",
+      "Airbnb | List your home",
+      "host",
+      "Enter a valid photo URL.",
+      req,
+    );
   }
 
   if (!["http:", "https:"].includes(photoUrl.protocol) || !photoUrl.hostname) {
-    return renderAddHomeError(
+    return renderFormError(
       res,
-      req.body,
+      "add-home",
+      "Airbnb | List your home",
+      "host",
       "Photo URLs must begin with http:// or https://.",
+      req,
     );
   }
 
@@ -97,10 +110,13 @@ hostRouter.post("/edit-home/:id", async (req, res) => {
   const numericPrice = Number(price);
 
   if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-    return renderAddHomeError(
+    return renderFormError(
       res,
-      req.body,
+      "edit-home",
+      "Airbnb | List your home",
+      "host",
       "Enter a valid price greater than ₹0.",
+      req,
     );
   }
 
@@ -109,14 +125,24 @@ hostRouter.post("/edit-home/:id", async (req, res) => {
   try {
     photoUrl = new URL(photo);
   } catch {
-    return renderAddHomeError(res, req.body, "Enter a valid photo URL.");
+    return renderFormError(
+      res,
+      "edit-home",
+      "Airbnb | List your home",
+      "host",
+      "Enter a valid photo URL.",
+      req,
+    );
   }
 
   if (!["http:", "https:"].includes(photoUrl.protocol) || !photoUrl.hostname) {
-    return renderAddHomeError(
+    return renderFormError(
       res,
-      req.body,
+      "edit-home",
+      "Airbnb | List your home",
+      "host",
       "Photo URLs must begin with http:// or https://.",
+      req,
     );
   }
 
@@ -201,38 +227,6 @@ hostRouter.get("/home-detail/:id", async (req, res) => {
   hostController(res, "home-detail", `${home[0].name} | Airbnb`, req.path, {
     home: formattedHome,
   });
-});
-
-// GET: Display user's favourite / saved homes
-hostRouter.get("/favourites", async (req, res) => {
-  const favouriteList = (await Home.getAllHomes()).filter(
-    (home) => home.isFavourite,
-  );
-
-  hostController(res, "favourites", "Airbnb | Saved homes", req.path, {
-    favouriteList,
-  });
-});
-
-// POST: Save or remove favourite / saved home
-hostRouter.post("/favourites/:id", async (req, res) => {
-  const { id } = req.params;
-  const home = await Home.getHomeById(id);
-
-  if (!home[0]) {
-    return homeController(
-      res.status(404),
-      "404",
-      "Airbnb | Page not found",
-      req.path,
-    );
-  }
-
-  await Home.findByIdAndUpdate(id, {
-    isFavourite: !home[0].isFavourite,
-  });
-
-  res.redirect("/host/favourites");
 });
 
 module.exports = hostRouter;

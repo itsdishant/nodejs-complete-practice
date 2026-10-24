@@ -9,6 +9,7 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Home",
       required: true,
+      index: true,
     },
     fullName: { type: String, required: true },
     email: { type: String, required: true },

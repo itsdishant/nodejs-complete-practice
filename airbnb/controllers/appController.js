@@ -3,7 +3,6 @@ const ejs = require("ejs");
 
 const VIEWS = path.join(__dirname, "..", "views");
 
-// partials/content.ejs, so no page repeats the doctype/head/header/main boilerplate.
 async function renderPage(res, view, title, currentPath, data = {}) {
   const locals = { ...res.locals, title, currentPath, ...data };
   try {
@@ -14,7 +13,6 @@ async function renderPage(res, view, title, currentPath, data = {}) {
     );
     res.send(html);
   } catch (err) {
-    // A broken template can't render a page, so surface the reason as text.
     res
       .status(500)
       .send(`Something went wrong while rendering this page: ${err.message}`);

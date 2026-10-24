@@ -4,6 +4,11 @@ const reserve = require("./reserveModel");
 
 const homeSchema = new mongoose.Schema(
   {
+    hostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     name: { type: String, required: true },
     location: { type: String, required: true },
     price: { type: Number, required: true },
@@ -13,7 +18,6 @@ const homeSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-// Delete all associated bookings when a home is deleted
 homeSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
     await reserve.deleteMany({
