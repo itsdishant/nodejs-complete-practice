@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { formatInr } = require("../utils/formatter");
-const reserve = require("./reserveModel");
+const booking = require("./bookingModel");
 
 const homeSchema = new mongoose.Schema(
   {
@@ -13,14 +13,13 @@ const homeSchema = new mongoose.Schema(
     location: { type: String, required: true },
     price: { type: Number, required: true },
     url: { type: String, required: true },
-    isFavourite: { type: Boolean, default: false },
   },
   { versionKey: false },
 );
 
 homeSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
-    await reserve.deleteMany({
+    await booking.deleteMany({
       $or: [{ homeId: doc._id }, { homeId: doc._id.toString() }],
     });
   }
@@ -36,7 +35,6 @@ Home.getAllHomes = async function () {
     location: home.location,
     price: home.price,
     url: home.url,
-    isFavourite: home.isFavourite,
     formattedPrice: formatInr.format(home.price),
   }));
 };
@@ -50,7 +48,6 @@ Home.getHomeById = async function (id) {
       location: home.location,
       price: home.price,
       url: home.url,
-      isFavourite: home.isFavourite,
       formattedPrice: formatInr.format(home.price),
     },
   ];

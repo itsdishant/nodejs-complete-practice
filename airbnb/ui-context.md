@@ -37,11 +37,11 @@ The identity is a plain wordmark, not a logomark.
 
 ## Typography
 
-| Role       | Font          | Token / class   | Used for                                              |
-| ---------- | ------------- | --------------- | ----------------------------------------------------- |
-| Display    | Space Grotesk | `--font-display`, `font-display` | h1/h2, home names, prices, receipt totals |
-| Body       | DM Sans       | `--font-body`, body default | Copy, labels, inputs, navigation           |
-| Mono       | DM Mono       | `--font-mono`, `font-mono` | Booking IDs and record references only   |
+| Role       | Font          | Token / class                           | Used for                                    |
+| ---------- | ------------- | --------------------------------------- | ------------------------------------------- |
+| Display    | Space Grotesk | `--font-display`, `font-display`        | h1/h2, home names, prices, receipt totals   |
+| Body       | DM Sans       | `--font-body`, body default             | Copy, labels, inputs, navigation            |
+| Mono       | DM Mono       | `--font-mono`, `font-mono`              | Booking IDs, the registered email on the signup confirmation, and record references |
 
 All three are loaded from Google Fonts in `styles.css`; `body` is DM Sans with `antialiased`.
 
@@ -61,11 +61,11 @@ Headings are `font-medium` (500). The only heavier weights are the wordmark (`fo
 
 Radius is small and consistent — near-square surfaces are the signature.
 
-| Context                                        | Class         |
-| ---------------------------------------------- | ------------- |
-| Cards, panels, images, inputs, buttons          | `rounded-sm`  |
-| Navigation pills, wishlist button, booking ID chip, filter chips | `rounded-full` |
-| Status pills on booking cards                   | `rounded-xs`  |
+| Context                                                            | Class          |
+| ------------------------------------------------------------------ | -------------- |
+| Cards, panels, images, inputs, buttons                             | `rounded-sm`   |
+| Navigation pills, wishlist button, booking ID chip, filter chips   | `rounded-full` |
+| Status pills on booking cards                                      | `rounded-xs`   |
 
 Do not introduce `rounded-md` or larger for containers, and do not square off the navigation pills or the booking ID chip.
 
@@ -85,7 +85,7 @@ A form never spans the page. When a form lives in a column, cap the column — n
 
 ### Panel
 
-```
+```text
 rounded-sm border border-pencil bg-white p-6 shadow-sm
 ```
 
@@ -130,7 +130,7 @@ Views are fragments only. `controllers/appController.js` renders the fragment, t
 ## Layout Patterns
 
 - **Shell:** `<main class="w-full min-h-[calc(100svh-5rem)] px-4 py-8 sm:px-6 sm:py-12">`. There is no global max-width container — each page constrains its own content.
-- **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`. These are the only vertically centered pages.
+- **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`. These are the only vertically centered pages. The signup confirmation is centered too, but only because the POST that renders it reports `currentPath` as `/signup`; there is no GET `/signup-success` route.
 - **Page header:** `border-b border-pencil pb-8`, h1 plus `mt-3 text-base text-ink/70` intro, optional right-aligned action in a `sm:flex-row sm:items-end sm:justify-between` row.
 - **Listing and booking grids:** `grid gap-6 sm:grid-cols-2 lg:grid-cols-4`, items `overflow-hidden rounded-sm border border-pencil bg-white`.
 - **Detail pages:** `grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12`; content `lg:col-span-7`, sticky aside `lg:col-span-5` (`sticky top-6 rounded-sm border border-pencil bg-white p-6 shadow-sm`). The listing detail page uses a 3-column grid (`lg:col-span-2` / `lg:col-span-1`) instead.

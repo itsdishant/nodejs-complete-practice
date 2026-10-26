@@ -1,0 +1,47 @@
+<%
+  const cleanName = typeof fullName === "string" ? fullName.trim() : "";
+  const firstName = cleanName ? cleanName.split(/\s+/)[0] : "";
+  const displayEmail = typeof email === "string" ? email.trim() : "";
+%>
+
+<section class="mx-auto w-full max-w-md">
+  <div class="text-center sm:text-left">
+    <h1 class="mt-5 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+      Welcome<% if (firstName) { %>, <%= firstName %><% } %>!
+    </h1>
+    <p class="mt-2 text-base text-ink/70">
+      Your account is created and ready to use.
+    </p>
+  </div>
+
+  <div class="mt-6 rounded-sm border border-pencil bg-white p-6 shadow-xs">
+    <h2 class="text-sm font-semibold text-ink">
+      Account summary
+    </h2>
+
+    <dl class="mt-4 divide-y divide-pencil text-sm">
+      <% if (cleanName) { %>
+      <div class="flex items-center justify-between py-3">
+        <dt class="text-ink/60">Full name</dt>
+        <dd class="font-medium text-ink"><%= cleanName %></dd>
+      </div>
+      <% } %>
+
+      <div class="flex items-center justify-between py-3">
+        <dt class="text-ink/60">Email address</dt>
+        <dd class="font-mono text-xs font-medium text-ink sm:text-sm truncate max-w-56" title="<%= displayEmail %>">
+          <%= displayEmail %>
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="mt-6 space-y-3">
+    <a
+      href="/login"
+      class="inline-flex min-h-12 w-full items-center justify-center rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+    >
+      Sign in to your account
+    </a>
+  </div>
+</section>

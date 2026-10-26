@@ -3,7 +3,7 @@ const homeController = require("../controllers/appController").homeController;
 const reserveController =
   require("../controllers/appController").reserveController;
 const Home = require("../models/homeModel");
-const Booking = require("../models/reserveModel");
+const Booking = require("../models/bookingModel");
 const { formatInr } = require("../utils/formatter");
 const { ObjectId } = require("mongodb");
 

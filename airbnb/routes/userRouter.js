@@ -5,6 +5,8 @@ const {
 } = require("../controllers/appController");
 const Home = require("../models/homeModel");
 const { formatInr } = require("../utils/formatter");
+const User = require("../models/userModel");
+const { renderFormError } = require("../helpers/error-render");
 
 const userRouter = express.Router();
 
@@ -32,29 +34,44 @@ userRouter.get("/login", (req, res) => {
   userController(res, "login", "Login to Airbnb", req.path);
 });
 
-// POST: Handle login form submission
+// GET: Display signup page
 userRouter.get("/signup", (req, res) => {
   userController(res, "signup", "Signup to Airbnb", req.path);
 });
 
 // POST: Handle signup form submission
 userRouter.post("/signup", async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, role } = req.body;
 
   const emailExists = await User.exists({ email: email });
 
   if (emailExists) {
-    return res.status(400).send("Email address already exists.");
+    return renderFormError(
+      res,
+      "signup",
+      "Signup to Airbnb",
+      "user",
+      "Email address already exists.",
+      req,
+    );
   }
 
   if (!fullName || !email || !password) {
-    return res.status(400).send("Please provide name, email, and password.");
+    return renderFormError(
+      res,
+      "signup",
+      "Signup to Airbnb",
+      "user",
+      "Please provide name, email, and password.",
+      req,
+    );
   }
 
   const newUser = new User({
     fullName,
     email,
     password,
+    role,
   });
 
   newUser
@@ -68,12 +85,18 @@ userRouter.post("/signup", async (req, res) => {
         {
           fullName,
           email,
-          password,
         },
       );
     })
     .catch((error) => {
-      console.error(error);
+      return renderFormError(
+        res,
+        "signup",
+        "Signup to Airbnb",
+        "user",
+        error.message,
+        req,
+      );
     });
 });
 
