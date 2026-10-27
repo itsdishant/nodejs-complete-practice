@@ -151,7 +151,7 @@ Reusable EJS partials in `views/`:
 
 | Partial | Contract |
 | ------- | -------- |
-| `partials/content.ejs` | Document shell: doctype, head, header, `<main>`, and centered `<div class="mx-auto w-full max-w-[1120px]">` bounding `<%- body %>`. |
+| `partials/content.ejs` | Document shell: doctype, head, header, `<main>`, and centered `<div class="mx-auto w-full max-w-280">` bounding `<%- body %>`. |
 | `partials/head.ejs` | Meta, theme color, `<title>`, iconoir CSS, and stylesheet links. |
 | `partials/header.ejs` | Sticky solid white navigation; reads `currentPath`, `cookies.isLoggedIn`, and `cookies.userDetails.role`. |
 | `shared/booking-id.ejs` | Highlighted record identifier; takes `{ id }`. |
@@ -165,8 +165,8 @@ Views are fragments only. `controllers/appController.js` renders the fragment, t
 
 ## Layout Patterns
 
-- **Standard Global Container (1120px):** Matching [airbnb.co.in](https://www.airbnb.co.in) room pages, the global document shell in `partials/content.ejs` wraps all page content inside `<div class="mx-auto w-full max-w-[1120px]">`.
-- **Navbar Width:** The header navbar in `partials/header.ejs` constrains its inner `<nav>` to `mx-auto flex w-full max-w-[1120px] items-center justify-between` so the logo and links align with the page content below.
+- **Standard Global Container (1120px):** Matching [airbnb.co.in](https://www.airbnb.co.in) room pages, the global document shell in `partials/content.ejs` wraps all page content inside `<div class="mx-auto w-full max-w-280">`.
+- **Navbar Width:** The header navbar in `partials/header.ejs` constrains its inner `<nav>` to `mx-auto flex w-full max-w-280 items-center justify-between` so the logo and links align with the page content below.
 - **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`.
 - **Page header:** `border-b border-pencil pb-8`, h1 plus `mt-3 text-base text-ink/70` intro, optional right-aligned action in a `sm:flex-row sm:items-end sm:justify-between` row.
 - **Listing and booking grids:** `grid gap-6 sm:grid-cols-2 lg:grid-cols-4`, items `overflow-hidden rounded-sm border border-pencil bg-white`.
