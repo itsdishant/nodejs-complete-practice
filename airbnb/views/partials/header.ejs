@@ -1,9 +1,15 @@
+<% const isAuth = Boolean(
+          (typeof isLoggedIn !== "undefined" && isLoggedIn) ||
+          (typeof cookies !== "undefined" && cookies && (cookies.isLoggedIn === "true" || cookies.isLoggedIn === true || cookies.userDetails))
+        );
+  const userRole = (typeof cookies !== "undefined" && cookies && cookies.userDetails && cookies.userDetails.role);
+        %>
 <header
-  class="sticky top-0 z-40 border-b border-ink/10 bg-white/95 backdrop-blur-md"
+  class="sticky top-0 z-40 border-b border-[#ebebeb] bg-white"
 >
   <nav
     aria-label="Main navigation"
-    class="flex w-full items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-3.5"
+    class="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-3.5"
   >
     <a
       class="shrink-0 font-display text-xl font-semibold tracking-tight sm:text-2xl transition-opacity hover:opacity-85"
@@ -15,27 +21,18 @@
     <div
       class="no-scrollbar flex max-w-[calc(100%-80px)] items-center gap-1.5 overflow-x-auto py-1 sm:max-w-none sm:gap-2"
     >
+
+      <% if (isAuth) { %>
+  
+      <% if (userRole !== 'host') { %>
+        
       <!-- Explore -->
       <a
         class="nav-link<%= currentPath === '/homes-list' ? ' nav-link-active' : '' %>"
         href="/host/homes-list"
         aria-current="<%= currentPath === '/homes-list' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="9" stroke-width="1.8" />
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"
-          />
-        </svg>
+        <i class="iconoir-compass" aria-hidden="true"></i>
         <span>Explore</span>
       </a>
 
@@ -45,21 +42,7 @@
         href="/bookings"
         aria-current="<%= currentPath === '/bookings' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <rect x="3" y="7" width="18" height="13" rx="2" stroke-width="1.8" />
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m-5 5h18"
-          />
-        </svg>
+        <i class="iconoir-calendar" aria-hidden="true"></i>
         <span>Bookings</span>
       </a>
 
@@ -69,22 +52,11 @@
         href="/wishlist"
         aria-current="<%= currentPath === '/wishlist' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-          />
-        </svg>
+        <i class="iconoir-heart" aria-hidden="true"></i>
         <span>Wishlist</span>
       </a>
+
+      <% } else { %>
 
       <!-- Your listings -->
       <a
@@ -92,74 +64,43 @@
         href="/host/host-homes-list"
         aria-current="<%= currentPath === '/host-homes-list' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-          />
-        </svg>
+        <i class="iconoir-home" aria-hidden="true"></i>
         <span>Your listings</span>
       </a>
 
-      <!-- Subtle Divider -->
-      <span
-        class="hidden h-5 w-px bg-pencil sm:block"
-        aria-hidden="true"
-      ></span>
-
-      <!-- Standout CTA: Airbnb your home -->
+      <!-- Airbnb your home -->
       <a
-        class="nav-cta group<%= currentPath === '/add-home' ? ' nav-cta-active' : '' %>"
+        class="nav-link<%= currentPath === '/add-home' ? ' nav-link-active' : '' %>"
         href="/host/add-home"
         aria-current="<%= currentPath === '/add-home' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-200 group-hover:scale-110"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
-          />
-        </svg>
+        <i class="iconoir-sparks" aria-hidden="true"></i>
         <span>Airbnb your home</span>
       </a>
 
-      <!-- Standout CTA: Login -->
+      <% } %>
+
+      <!-- Logout -->
       <a
-        class="nav-cta group<%= currentPath === '/login' ? ' nav-cta-active' : '' %>"
+        class="nav-link<%= currentPath === '/logout' ? ' nav-link-active' : '' %>"
+        href="/logout"
+        aria-current="<%= currentPath === '/logout' ? 'page' : 'false' %>"
+      >
+        <i class="iconoir-log-out" aria-hidden="true"></i>
+        <span>Logout</span>
+      </a>
+
+      <% } else { %>
+      <!-- Login -->
+      <a
+        class="nav-link<%= currentPath === '/login' ? ' nav-link-active' : '' %>"
         href="/login"
         aria-current="<%= currentPath === '/login' ? 'page' : 'false' %>"
       >
-        <svg
-          class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-200 group-hover:scale-110"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.8"
-            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
-          />
-        </svg>
+        <i class="iconoir-log-in" aria-hidden="true"></i>
         <span>Login</span>
       </a>
+      <% } %>
     </div>
   </nav>
 </header>

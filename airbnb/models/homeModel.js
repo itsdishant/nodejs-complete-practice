@@ -13,6 +13,7 @@ const homeSchema = new mongoose.Schema(
     location: { type: String, required: true },
     price: { type: Number, required: true },
     url: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
   },
   { versionKey: false },
 );
@@ -40,7 +41,8 @@ Home.getAllHomes = async function () {
 };
 
 Home.getHomeById = async function (id) {
-  const home = await Home.findById(id);
+  const home = await Home.findById(id).populate("hostId");
+  if (!home) return [];
   return [
     {
       _id: home._id.toString(),
@@ -49,6 +51,14 @@ Home.getHomeById = async function (id) {
       price: home.price,
       url: home.url,
       formattedPrice: formatInr.format(home.price),
+      host: home.hostId
+        ? {
+            id: home.hostId._id.toString(),
+            fullName: home.hostId.fullName || "Verified Host",
+            email: home.hostId.email,
+            createdAt: home.hostId.createdAt,
+          }
+        : null,
     },
   ];
 };

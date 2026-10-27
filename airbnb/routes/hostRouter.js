@@ -6,17 +6,26 @@ const sharedController =
 const Home = require("../models/homeModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
+const Wishlist = require("../models/wishlistModel");
 
 const hostRouter = express.Router();
 
 // GET: Render "Add Home" form
 hostRouter.get("/add-home", (req, res) => {
+  const userDetails = req.cookies.userDetails;
+  const isLoggedIn = req.cookies.isLoggedIn;
+
+  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
+    return res.redirect("/");
+  }
+
   hostController(res, "add-home", "Airbnb | List your home", req.path);
 });
 
 // POST: Validate and save a new home listing
 hostRouter.post("/add-home", (req, res) => {
   const { homeName, location, price, photo } = req.body;
+  const userDetails = req.cookies.userDetails;
   const numericPrice = Number(price);
 
   if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
@@ -57,6 +66,7 @@ hostRouter.post("/add-home", (req, res) => {
   }
 
   const newHome = new Home({
+    hostId: userDetails.id,
     name: homeName,
     location,
     price: numericPrice,
@@ -80,7 +90,16 @@ hostRouter.post("/add-home", (req, res) => {
         },
       );
     })
-    .catch((error) => console.error(error));
+    .catch((error) => {
+      return renderFormError(
+        res,
+        "add-home",
+        "Airbnb | List your home",
+        "host",
+        error.message,
+        req,
+      );
+    });
 });
 
 // GET: Display edit home form
@@ -199,33 +218,25 @@ hostRouter.get("/host-homes-list", async (req, res) => {
 // GET: Display catalog of all homes
 hostRouter.get("/homes-list", async (req, res) => {
   const homes = await Home.getAllHomes();
+  const userDetails = req.cookies.userDetails;
+  let wishlistedIds = new Set();
 
-  hostController(res, "homes-list", "Airbnb | Explore stays", req.path, {
-    homes,
-  });
-});
-
-// GET: Display details for a specific home
-hostRouter.get("/home-detail/:id", async (req, res) => {
-  const { id } = req.params;
-  const home = await Home.getHomeById(id);
-
-  if (!home[0]) {
-    return homeController(
-      res.status(404),
-      "404",
-      "Airbnb | Page not found",
-      req.path,
+  if (req.cookies.isLoggedIn && userDetails && userDetails.id) {
+    const userWishlists = await Wishlist.find({
+      userId: userDetails.id,
+    }).select("homeId");
+    wishlistedIds = new Set(
+      userWishlists.map((item) => item.homeId.toString()),
     );
   }
 
-  const formattedHome = {
-    ...home[0],
-    formattedPrice: formatInr.format(home[0].price),
-  };
+  const homesWithWishlist = homes.map((home) => ({
+    ...home,
+    isFavourite: wishlistedIds.has(home._id.toString()),
+  }));
 
-  hostController(res, "home-detail", `${home[0].name} | Airbnb`, req.path, {
-    home: formattedHome,
+  hostController(res, "homes-list", "Airbnb | Explore stays", req.path, {
+    homes: homesWithWishlist,
   });
 });
 

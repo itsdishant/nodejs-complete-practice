@@ -17,8 +17,9 @@
     @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-pencil bg-white px-3 py-1.5 text-xs font-medium text-ink/80 transition-all duration-150 sm:gap-2 sm:px-3.5 sm:py-2 sm:text-xs md:px-4 md:py-2 md:text-sm;
   }
 
-  .nav-link svg {
-    @apply h-3.5 w-3.5 shrink-0 text-ink/60 transition-colors sm:h-4 sm:w-4;
+  .nav-link svg,
+  .nav-link i {
+    @apply text-[15px] sm:text-[16px] shrink-0 text-ink/60 transition-colors flex items-center justify-center;
   }
 
   .nav-link:hover {
@@ -27,7 +28,8 @@
     color: var(--color-ink);
   }
 
-  .nav-link:hover svg {
+  .nav-link:hover svg,
+  .nav-link:hover i {
     color: var(--color-ink);
   }
 
@@ -38,7 +40,8 @@
     font-weight: 600;
   }
 
-  .nav-link.nav-link-active svg {
+  .nav-link.nav-link-active svg,
+  .nav-link.nav-link-active i {
     color: #ffffff;
   }
 
@@ -53,11 +56,13 @@
     @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-ink bg-ink px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:border-coral hover:bg-coral hover:shadow-sm sm:gap-2 sm:px-4 sm:py-2 sm:text-xs md:px-5 md:py-2 md:text-sm;
   }
 
-  .nav-cta svg {
-    @apply h-3.5 w-3.5 shrink-0 text-coral transition-colors duration-200 sm:h-4 sm:w-4;
+  .nav-cta svg,
+  .nav-cta i {
+    @apply text-[15px] sm:text-[16px] shrink-0 text-coral transition-colors duration-200 flex items-center justify-center;
   }
 
-  .nav-cta:hover svg {
+  .nav-cta:hover svg,
+  .nav-cta:hover i {
     color: #ffffff;
   }
 
@@ -68,7 +73,8 @@
     box-shadow: 0 0 0 2px rgba(255, 90, 95, 0.25);
   }
 
-  .nav-cta.nav-cta-active svg {
+  .nav-cta.nav-cta-active svg,
+  .nav-cta.nav-cta-active i {
     color: #ffffff;
   }
 
