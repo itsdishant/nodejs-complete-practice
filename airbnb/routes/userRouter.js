@@ -8,15 +8,34 @@ const { formatInr } = require("../utils/formatter");
 const User = require("../models/userModel");
 const { renderFormError } = require("../helpers/error-render");
 const Wishlist = require("../models/wishlistModel");
+const { homesFor } = require("../helpers/home-data");
 
 const userRouter = express.Router();
 
+// A home counts as international when its location ends in a country other
+// than India ("Ubud, Bali, Indonesia"). Indian listings read "Siolim, Goa".
+const FOREIGN_COUNTRY =
+  /,\s*(Indonesia|Thailand|Japan|Portugal|Greece|Italy|Spain|France|Sri Lanka|Nepal|Bhutan|Maldives|Malaysia|Singapore|Vietnam|UAE|United Arab Emirates)$/i;
+
 userRouter.get("/", async (req, res) => {
-  const allHomes = await Home.getAllHomes();
-  const featuredHomes = allHomes.slice(0, 4).map((home) => ({
-    ...home,
-    formattedPrice: formatInr.format(home.price),
-  }));
+  const homes = await homesFor(req);
+  const internationalHomes = homes.filter((home) =>
+    FOREIGN_COUNTRY.test(home.location),
+  );
+  const indianHomes = homes.filter(
+    (home) => !FOREIGN_COUNTRY.test(home.location),
+  );
+
+  // Destinations are the city part of "City, Region" / "City, Region, Country",
+  // ordered by how many homes each one has.
+  const counts = new Map();
+  for (const home of homes) {
+    const city = home.location.split(",")[0].trim();
+    counts.set(city, (counts.get(city) || 0) + 1);
+  }
+  const destinations = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([city]) => city);
 
   homeController(
     res,
@@ -24,8 +43,10 @@ userRouter.get("/", async (req, res) => {
     "Airbnb | Vacation Rentals & Places to Stay",
     req.path,
     {
-      featuredHomes,
-      totalHomesCount: allHomes.length,
+      indianHomes,
+      internationalHomes,
+      destinations,
+      totalHomesCount: homes.length,
     },
   );
 });

@@ -16,6 +16,7 @@ All colors are declared as Tailwind v4 theme tokens in `styles.css` (`@theme`) a
 | Role           | Token              | Hex       | Utilities                                       |
 | -------------- | ------------------ | --------- | ----------------------------------------------- |
 | Page / surface | `--color-paper`    | `#ffffff` | `bg-paper`                                      |
+| Chrome band    | `--color-cloud`    | `#f2f2f2` | `bg-cloud` (sticky header only)                 |
 | Text           | `--color-ink`      | `#262626` | `text-ink`, `border-ink`, `bg-ink`              |
 | Action accent  | `--color-coral`    | `#ff5a5f` | `bg-coral`, `text-coral`, `border-coral`        |
 | Tinted fill    | `--color-mist`     | `#eaf3f0` | `bg-mist` (image wells, hover wash)             |
@@ -23,7 +24,7 @@ All colors are declared as Tailwind v4 theme tokens in `styles.css` (`@theme`) a
 
 Tinting is done with opacity modifiers on the tokens, not new colors: `text-ink/70` for intros, `text-ink/60` for muted, `text-ink/50` for faint micro-labels, `border-ink/10` for chrome rules, `bg-coral/5` with `border-coral/30` for selection and alerts.
 
-Surfaces are white on white. A card is separated by `border-pencil` plus `shadow-sm`, never by a grey background. Image wells use `bg-mist`.
+Surfaces are white on white. A card is separated by `border-pencil` plus `shadow-sm`, never by a grey background. Image wells use `bg-mist`. The one exception is the sticky header, which sits on the `bg-cloud` band so the white navigation pills read as raised controls.
 
 Focus is global: `:focus-visible` is a 2px coral outline at 3px offset (`styles.css`). CTAs override the offset to `focus-visible:outline-offset-4`; inputs use `focus:border-coral focus:outline-none` instead of an outline.
 
@@ -41,12 +42,15 @@ Known exception: the `Confirmed` pill on booking cards uses raw `emerald-*` clas
 
 ## Logo & Brand Identity
 
-The identity is a plain wordmark, not a logomark.
+The identity is a coral lockup — a pin mark set against the wordmark, matching [airbnb.co.in](https://www.airbnb.co.in).
 
-- **Wordmark:** `airbnb` set in the display face (`font-display`, `font-semibold`, `tracking-tight`, `text-xl sm:text-2xl`) with the trailing period in `text-coral`. Defined inline in `views/partials/header.ejs`, links to `/`, `aria-label="Airbnb home"`.
+- **Lockup:** an inline Iconoir `map-pin` SVG (`h-6 w-6 sm:h-7 sm:w-7`, `stroke-width="2"`, `currentColor`) followed by `airbnb` in the display face (`font-display`, `font-semibold`, `tracking-tight`, `text-xl sm:text-2xl`), gap `2 sm:2.5`. Both the mark and the wordmark are `text-coral`; the whole lockup is one link to `/` with `aria-label="Airbnb home"` and `hover:opacity-85`.
+- **Motion:** the pin lifts 2px on hover (`group-hover:-translate-y-0.5`, 200ms) and inherits the global reduced-motion rule. Nothing else in the header animates.
+- **Wordmark period:** retired. A trailing coral dot is invisible once the wordmark itself is coral, so the lockup is just the pin plus `airbnb`.
+- **Where it lives:** inline in `views/partials/header.ejs`. There is no logo component and no separate icon asset.
+- **Inline SVG exception:** this lockup is the only raw SVG in the app. It is still an Iconoir glyph, inlined so it can scale with the wordmark and inherit `text-coral` — every other icon uses an `<i class="iconoir-…">` class.
 - **Favicon:** `public/favicon.svg`, declared in `views/partials/head.ejs`.
 - **Browser theme color:** `#FF5A5F`, with a per-page `themeColor` local as the override.
-- There is no logo component and no icon asset — keep the wordmark as inline markup in the header.
 
 ---
 
@@ -62,7 +66,7 @@ All three are loaded from Google Fonts in `styles.css`; `body` is DM Sans with `
 
 Type scale:
 
-- Hero (home): `text-4xl sm:text-6xl lg:text-7xl`, `leading-[1.08]`, `tracking-tight`.
+- Hero (home): `text-4xl sm:text-5xl`, `font-medium`, `tracking-tight` — search-first, so the headline stays page-sized, never a marketing banner.
 - Page h1 (listings, bookings, 404): `text-4xl sm:text-5xl`, `font-medium`.
 - Page h1 (detail pages): `text-3xl sm:text-4xl lg:text-5xl`, `tracking-tight`.
 - Page h1 (auth and form pages): `text-3xl sm:text-4xl`.
@@ -93,9 +97,10 @@ Do not introduce `rounded-md` or larger for containers, and do not square off th
 - Powered by **Iconoir** via CSS classes (`<i class="iconoir-..."></i>`).
 - Compiled into `public/iconoir.css` with a standardized `stroke-width="2"`.
 - Linked in `views/partials/head.ejs` via `<link rel="stylesheet" href="/iconoir.css" />`.
-- Raw inline SVGs and Font Awesome have been completely replaced by Iconoir.
+- Raw inline SVGs and Font Awesome have been completely replaced by Iconoir — the sole exception is the header logo lockup, which inlines Iconoir's `map-pin` (see Logo & Brand Identity).
 - Common icons in use:
   - Navigation: `iconoir-compass` (Explore), `iconoir-calendar` (Bookings), `iconoir-heart` (Wishlist), `iconoir-home` (Your listings), `iconoir-sparks` (Airbnb your home), `iconoir-log-in` (Login), `iconoir-log-out` (Logout).
+  - Brand: `map-pin` inlined in the header lockup.
   - Metadata: `iconoir-map-pin` (Location), `iconoir-mail` (Contact email).
   - Wishlist toggle: `iconoir-heart` (unfavourited) and `iconoir-heart-solid` (favourited).
 
@@ -161,16 +166,25 @@ Reusable EJS partials in `views/`:
 
 Views are fragments only. `controllers/appController.js` renders the fragment, then injects it into `partials/content.ejs` as `body`; page helpers are `homeController`, `hostController`, `reserveController`, `sharedController`, `userController`.
 
+Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` — every home plus the signed-in guest's `isFavourite` — and is the single source for the home page and `/host/homes-list`, so both surfaces render identical hearts.
+
 ---
 
 ## Layout Patterns
 
 - **Standard Global Container (1120px):** Matching [airbnb.co.in](https://www.airbnb.co.in) room pages, the global document shell in `partials/content.ejs` wraps all page content inside `<div class="mx-auto w-full max-w-280">` by default, or `max-w-full` if `fullWidth` is passed.
-- **Navbar Width:** The header navbar in `partials/header.ejs` constrains its inner `<nav>` to `max-w-280` (`px-4 sm:px-6`) to align with content, and only expands to full width (`max-w-full px-4 sm:px-6 lg:px-8`) when `fullWidth` or `fullWidthHeader` is requested.
+- **Navbar Width:** the horizontal gutter lives on the `<header>` (`px-4 sm:px-6`) and the inner `<nav>` is `mx-auto w-full max-w-280` with no padding of its own — the same construction as `<main>` + its `max-w-280` container. That is what keeps the logo flush with the page content at every width (with padding on the nav itself, desktop content sat 24px inside the page grid). `fullWidth` / `fullWidthHeader` switch the nav to `max-w-full`.
 - **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`.
+- **Home page (`views/home.ejs`) — search first, no marketing:** the page opens with an h1 (`text-4xl sm:text-5xl`), one `text-base text-ink/70` line of counts, then the search form. No hero image, no value-prop blocks, no CTA pair.
+  - **Search form:** a real `GET` to `/host/homes-list`, `role="search"`, `max-w-2xl`, `flex items-stretch gap-2 rounded-sm border border-pencil bg-white p-2 shadow-sm` with `focus-within:border-ink/40`. Inside: `iconoir-map-pin` at `text-ink/40`, a borderless `type="search"` input (`min-h-11`, `text-sm`, placeholder `text-ink/40`), and the coral `rounded-sm` submit button. The pill-shaped Airbnb search bar is deliberately not used — `rounded-sm` is the contract.
+  - **Destination chips:** directly under the form (`mt-5`), one horizontally scrolling row (`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0`) of `rounded-full border border-pencil bg-white px-3.5 py-2 text-xs font-medium` links to `/host/homes-list?q=<city>`. Never wrap them into rows — a wrapped block buries the listings. The heading is `sr-only`.
+  - **Country rails:** `mt-12 border-t border-pencil pt-8` sections, heading `font-display text-xl sm:text-2xl` with a right-aligned `text-sm text-ink/50` count. The rail is `no-scrollbar -mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:scroll-pl-0 sm:px-0`; each item is `w-[76%] shrink-0 snap-start overflow-hidden rounded-sm border border-pencil bg-white sm:w-[46%] lg:w-[300px]`. `scroll-pl-4` is required or the first card snaps flush to the viewport edge on mobile.
+  - Rails render only when non-empty, and the page ends with one coral "Browse all N stays →" link — no second CTA.
+  - Data comes from `helpers/home-data.js` (`homesFor(req)`, homes + `isFavourite`), shared with the listings route. India vs. rest-of-world is decided by `FOREIGN_COUNTRY` in `routes/userRouter.js`; destinations are the city segment of `location`, ordered by home count.
 - **Page header:** `border-b border-pencil pb-8`, h1 plus `mt-3 text-base text-ink/70` intro, optional right-aligned action in a `sm:flex-row sm:items-end sm:justify-between` row.
 - **Listing and booking grids:** `grid gap-6 sm:grid-cols-2 lg:grid-cols-4`, items `overflow-hidden rounded-sm border border-pencil bg-white`.
-- **Home Detail Page Layout (`views/host/home-detail.ejs`):**
+- **Search results (`/host/homes-list?q=`):** the route matches `q` case-insensitively against `name + location` via `homesFor(req)`. With a query, the count line reads `N stays matching “q”` followed by an inline coral "Clear search" link back to `/host/homes-list`; without one it reads `N homes`. A zero-match query gets its own empty state ("No stays in “q”") with a "Browse all stays" CTA — never the generic empty page.
+- **Home Detail Page Layout (`views/users/home-detail.ejs`):**
   - Uses an asymmetric 2-column grid (`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12 xl:gap-16`).
   - **Left Column (`lg:col-span-7 xl:col-span-8`)**:
     - Listing title `h1` at top.
@@ -191,9 +205,9 @@ Views are fragments only. `controllers/appController.js` renders the fragment, t
 
 ### Navbar
 
-Sticky (`sticky top-0 z-40`), solid white background (`bg-white`) matching [airbnb.co.in](https://www.airbnb.co.in), separated by a subtle border (`border-b border-[#ebebeb]`).
+Sticky (`sticky top-0 z-40`), solid `bg-cloud` (`#f2f2f2`) with **no border** — the tone step against the white page is the separator. White pills on the grey band are what make the controls read as raised.
 
-- Left: the `airbnb.` wordmark (`font-display font-semibold tracking-tight text-xl sm:text-2xl` with trailing dot in `text-coral`).
+- Left: the coral logo lockup — inline Iconoir `map-pin` + `airbnb` wordmark (see Logo & Brand Identity).
 - Right: Uniform `.nav-link` pills with Iconoir icons, plus a User Profile identity badge when authenticated:
   - **Guest / Authenticated:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), User badge, Logout (`iconoir-log-out`).
   - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), User badge, Logout (`iconoir-log-out`).

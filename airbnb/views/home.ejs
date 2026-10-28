@@ -1,183 +1,123 @@
-      <!-- Hero Section -->
-      <section aria-labelledby="hero-heading" class="w-full">
-        <div class="max-w-3xl">
-          <h1
-            id="hero-heading"
-            class="font-display text-4xl font-medium tracking-tight text-ink sm:text-6xl lg:text-7xl leading-[1.08]"
-          >
-            Find places to stay that actually feel like home.
-          </h1>
-          <p class="mt-6 max-w-2xl text-base leading-relaxed text-ink/70 sm:text-lg">
-            Houses in the hills, flats near the beach, and quiet getaways across India.
-            Browse places listed by local hosts, check prices upfront, and book when you are ready.
-          </p>
+<%
+  const indiaHomes = typeof indianHomes !== "undefined" ? indianHomes : [];
+  const worldHomes = typeof internationalHomes !== "undefined" ? internationalHomes : [];
+  const places = typeof destinations !== "undefined" ? destinations : [];
+  const total = typeof totalHomesCount !== "undefined" ? totalHomesCount : indiaHomes.length + worldHomes.length;
+  const rails = [
+    { id: "india", title: "Homes in India", homes: indiaHomes },
+    { id: "world", title: "Stays outside India", homes: worldHomes },
+  ].filter((rail) => rail.homes.length > 0);
+%>
 
-          <div class="mt-8 flex flex-wrap items-center gap-4">
-            <a
-              href="/host/homes-list"
-              class="inline-flex min-h-12 items-center justify-center rounded-sm bg-coral px-7 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
-            >
-              Explore homes
-            </a>
-            <a
-              href="/host/add-home"
-              class="inline-flex min-h-12 items-center justify-center rounded-sm border border-pencil bg-white px-7 text-sm font-semibold text-ink transition-colors hover:border-ink hover:bg-mist focus-visible:outline-offset-4"
-            >
-              List your home
-            </a>
-          </div>
-        </div>
-
-        <!-- Featured Panoramic Hero Visual -->
-        <div
-          class="relative mt-12 overflow-hidden rounded-sm border border-pencil bg-mist"
+      <!-- Search -->
+      <section aria-labelledby="home-heading" class="w-full">
+        <h1
+          id="home-heading"
+          class="font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl"
         >
-          <img
-            src="<%= typeof featuredHomes !== 'undefined' && featuredHomes.length > 0 ? featuredHomes[0].url : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2400&auto=format&fit=crop' %>"
-            alt="Featured home"
-            class="aspect-16/9 sm:aspect-21/9 max-h-[520px] w-full object-cover"
-            loading="eager"
-          />
-          <div
-            class="absolute bottom-4 left-4 rounded-sm border border-white/20 bg-white/90 px-3.5 py-2 backdrop-blur-sm sm:bottom-6 sm:left-6"
-          >
-            <p class="font-display text-xs font-semibold text-ink sm:text-sm">
-              <%= typeof featuredHomes !== 'undefined' && featuredHomes.length > 0 ? featuredHomes[0].name : "Garden's Hill" %>
-            </p>
-            <p class="text-[11px] text-ink/70 sm:text-xs">
-              <%= typeof featuredHomes !== 'undefined' && featuredHomes.length > 0 ? featuredHomes[0].location : "Pune, MH" %>
-            </p>
+          Find your next stay
+        </h1>
+        <p class="mt-3 max-w-2xl text-base text-ink/70">
+          <%= total %> homes in <%= places.length %> destinations, booked directly with the people who host them.
+        </p>
+
+        <form
+          action="/host/homes-list"
+          method="GET"
+          role="search"
+          class="mt-8 flex w-full max-w-2xl items-stretch gap-2 rounded-sm border border-pencil bg-white p-2 shadow-sm transition-colors focus-within:border-ink/40"
+        >
+          <label for="destination" class="sr-only">Destination</label>
+          <div class="flex min-w-0 flex-1 items-center gap-2 pl-2">
+            <i class="iconoir-map-pin shrink-0 text-lg text-ink/40" aria-hidden="true"></i>
+            <input
+              id="destination"
+              name="q"
+              type="search"
+              autocomplete="off"
+              placeholder="Where to? Try Goa, Kyoto, or Munnar"
+              class="min-h-11 w-full min-w-0 bg-transparent text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+            />
           </div>
-        </div>
+          <button
+            type="submit"
+            class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+          >
+            Search
+          </button>
+        </form>
       </section>
 
-      <!-- Featured Homes Section -->
-      <section
-        aria-labelledby="featured-heading"
-        class="mt-20 border-t border-pencil pt-16 sm:mt-24 sm:pt-20"
-      >
-        <div
-          class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      <% if (places.length > 0) { %>
+      <!-- Destinations -->
+      <section aria-labelledby="destinations-heading" class="mt-5 w-full">
+        <h2 id="destinations-heading" class="sr-only">Destinations</h2>
+        <ul
+          class="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
         >
-          <div>
-            <h2
-              id="featured-heading"
-              class="font-display text-2xl font-medium tracking-tight text-ink sm:text-3xl"
-            >
-              Recently added places
-            </h2>
-            <p class="mt-2 text-sm text-ink/70">
-              A few spots from hosts around the country.
-            </p>
-          </div>
-          <div>
+          <% for (const place of places) { %>
+          <li class="shrink-0">
             <a
-              href="/host/homes-list"
-              class="inline-flex items-center gap-1.5 text-sm font-semibold text-coral underline underline-offset-4 transition-colors hover:text-ink"
-            >
-              View all <%= typeof totalHomesCount !== "undefined" ? totalHomesCount : "" %> homes
-              <span aria-hidden="true">&rarr;</span>
-            </a>
-          </div>
-        </div>
-
-        <% if (typeof featuredHomes !== "undefined" && featuredHomes.length > 0) { %>
-        <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <% for (const home of featuredHomes) { %>
-          <article
-            class="group flex flex-col overflow-hidden rounded-sm border border-pencil bg-white transition-all hover:border-ink/30"
-          >
-            <a
-              href="/home-detail/<%= home._id %>"
-              class="flex h-full flex-col no-underline"
-            >
-              <div class="overflow-hidden bg-mist">
-                <img
-                  src="<%= home.url %>"
-                  alt="Photo of <%= home.name %>"
-                  class="aspect-4/3 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  loading="lazy"
-                />
-              </div>
-              <div class="flex flex-1 flex-col justify-between p-5">
-                <div class="mb-4">
-                  <h3
-                    class="font-display text-lg font-medium leading-snug text-ink transition-colors group-hover:text-coral"
-                  >
-                    <%= home.name %>
-                  </h3>
-                  <p class="mt-1 text-sm text-ink/60"><%= home.location %></p>
-                </div>
-                <div
-                  class="flex items-baseline justify-between border-t border-pencil pt-3 text-sm text-ink"
-                >
-                  <p>
-                    <span class="font-semibold"><%= home.formattedPrice %></span>
-                    <span class="text-xs text-ink/60">per night</span>
-                  </p>
-                  <span
-                    class="text-xs font-semibold text-coral opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    Details &rarr;
-                  </span>
-                </div>
-              </div>
-            </a>
-          </article>
+              href="/host/homes-list?q=<%= encodeURIComponent(place) %>"
+              class="inline-flex items-center rounded-full border border-pencil bg-white px-3.5 py-2 text-xs font-medium text-ink/80 transition-colors hover:border-ink hover:bg-mist hover:text-ink"
+            ><%= place %></a>
+          </li>
           <% } %>
-        </div>
-        <% } %>
+        </ul>
       </section>
+      <% } %>
 
-      <!-- How It Works / Details Section -->
+      <% if (rails.length > 0) { %>
+      <% for (const rail of rails) { %>
+      <!-- <%= rail.title %> -->
       <section
-        aria-labelledby="how-it-works-heading"
-        class="mt-20 border-t border-pencil pt-16 sm:mt-24 sm:pt-20"
+        aria-labelledby="<%= rail.id %>-heading"
+        class="mt-12 border-t border-pencil pt-8"
       >
-        <div class="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-          <div class="lg:col-span-5">
-            <h2
-              id="how-it-works-heading"
-              class="font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl"
-            >
-              Straightforward booking, directly with hosts.
-            </h2>
-            <p class="mt-4 text-base leading-relaxed text-ink/70">
-              Skip generic hotel corridors. Stay in homes with character, cook your own meals,
-              and get local recommendations from people who actually live there.
-            </p>
-          </div>
-
-          <div class="space-y-8 lg:col-span-7">
-            <div class="border-b border-pencil pb-6">
-              <h3 class="font-display text-lg font-medium text-ink">
-                Clear pricing upfront
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink/70">
-                You see the full price, including cleaning and service fees, before you confirm.
-                No sudden add-ons when you go to pay.
-              </p>
-            </div>
-
-            <div class="border-b border-pencil pb-6">
-              <h3 class="font-display text-lg font-medium text-ink">
-                Easy communication
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink/70">
-                Reach out to your host anytime for check-in directions, Wi-Fi passwords,
-                or recommendations for good coffee nearby.
-              </p>
-            </div>
-
-            <div>
-              <h3 class="font-display text-lg font-medium text-ink">
-                Flexible cancellations
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink/70">
-                Plans change. Most places let you cancel up to 48 hours before your trip
-                starts with a full refund.
-              </p>
-            </div>
-          </div>
+        <div class="flex items-end justify-between gap-4">
+          <h2
+            id="<%= rail.id %>-heading"
+            class="font-display text-xl font-medium text-ink sm:text-2xl"
+          >
+            <%= rail.title %>
+          </h2>
+          <p class="pb-0.5 text-sm text-ink/50">
+            <%= rail.homes.length %> <%= rail.homes.length === 1 ? "home" : "homes" %>
+          </p>
         </div>
+
+        <ul
+          class="no-scrollbar -mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:scroll-pl-0 sm:px-0"
+        >
+          <% for (const home of rail.homes) { %>
+          <li
+            class="w-[76%] shrink-0 snap-start overflow-hidden rounded-sm border border-pencil bg-white transition-colors hover:border-ink/30 sm:w-[46%] lg:w-[300px]"
+          >
+            <%- include("./shared/single-home-card", { home: home }) %>
+          </li>
+          <% } %>
+        </ul>
       </section>
+      <% } %>
+
+      <div class="mt-12 border-t border-pencil pt-8">
+        <a
+          href="/host/homes-list"
+          class="inline-flex items-center gap-1.5 text-sm font-semibold text-coral underline underline-offset-4 transition-colors hover:text-ink"
+        >
+          Browse all <%= total %> stays <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+      <% } else { %>
+      <div class="mt-12 max-w-xl border-t border-pencil py-12">
+        <h2 class="font-display text-2xl font-medium">No stays listed yet</h2>
+        <p class="mt-3 text-sm leading-6 text-ink/60">
+          Once a host publishes a home, it shows up here.
+        </p>
+        <a
+          class="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+          href="/host/add-home"
+          >List your home</a
+        >
+      </div>
+      <% } %>

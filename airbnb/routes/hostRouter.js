@@ -6,7 +6,7 @@ const sharedController =
 const Home = require("../models/homeModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
-const Wishlist = require("../models/wishlistModel");
+const { homesFor } = require("../helpers/home-data");
 
 const hostRouter = express.Router();
 
@@ -215,28 +215,20 @@ hostRouter.get("/host-homes-list", async (req, res) => {
   });
 });
 
-// GET: Display catalog of all homes
+// GET: Display catalog of all homes, optionally filtered by ?q=
 hostRouter.get("/homes-list", async (req, res) => {
-  const homes = await Home.getAllHomes();
-  const userDetails = req.session.userDetails;
-  let wishlistedIds = new Set();
-
-  if (req.session.isLoggedIn && userDetails && userDetails.id) {
-    const userWishlists = await Wishlist.find({
-      userId: userDetails.id,
-    }).select("homeId");
-    wishlistedIds = new Set(
-      userWishlists.map((item) => item.homeId.toString()),
-    );
-  }
-
-  const homesWithWishlist = homes.map((home) => ({
-    ...home,
-    isFavourite: wishlistedIds.has(home._id.toString()),
-  }));
+  const query = String(req.query.q || "").trim();
+  const homes = await homesFor(req);
+  const needle = query.toLowerCase();
+  const matches = needle
+    ? homes.filter((home) =>
+        `${home.name} ${home.location}`.toLowerCase().includes(needle),
+      )
+    : homes;
 
   hostController(res, "homes-list", "Airbnb | Explore stays", req.path, {
-    homes: homesWithWishlist,
+    homes: matches,
+    query,
   });
 });
 

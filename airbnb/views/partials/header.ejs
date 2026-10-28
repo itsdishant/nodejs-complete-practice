@@ -12,18 +12,35 @@ const isFullWidth = Boolean(
 );
 %>
 <header
-  class="sticky top-0 z-40 border-b border-[#ebebeb] bg-white"
+  class="sticky top-0 z-40 bg-cloud px-4 sm:px-6"
 >
   <nav
     aria-label="Main navigation"
-    class="mx-auto flex w-full <%= isFullWidth ? 'max-w-full px-4 sm:px-6 lg:px-8' : 'max-w-280 px-4 sm:px-6' %> items-center justify-between gap-3 py-3 sm:gap-4 sm:py-3.5"
+    class="mx-auto flex w-full <%= isFullWidth ? 'max-w-full' : 'max-w-280' %> items-center justify-between gap-3 py-3 sm:gap-4 sm:py-3.5"
   >
     <a
-      class="shrink-0 font-display text-xl font-semibold tracking-tight sm:text-2xl transition-opacity hover:opacity-85"
+      class="group inline-flex shrink-0 items-center gap-2 text-coral transition-opacity hover:opacity-85 sm:gap-2.5"
       href="/"
       aria-label="Airbnb home"
-      >airbnb<span class="text-coral">.</span></a
     >
+      <svg
+        class="h-6 w-6 shrink-0 transition-transform duration-200 group-hover:-translate-y-0.5 sm:h-7 sm:w-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z" />
+        <path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="currentColor" />
+      </svg>
+      <span
+        class="font-display text-xl font-semibold tracking-tight sm:text-2xl"
+        >airbnb</span
+      >
+    </a>
 
     <div
       class="no-scrollbar flex max-w-[calc(100%-80px)] items-center gap-1.5 overflow-x-auto py-1 sm:max-w-none sm:gap-2"

@@ -9,13 +9,23 @@
             Explore stays
           </h1>
           <p class="mt-3 text-base text-ink/70">
-            Browse flats, cottages, and family homes hosted across India.
+            Browse flats, cottages, and family homes hosted across India and beyond.
           </p>
         </div>
         <% if (homes.length > 0) { %>
         <div class="mt-8">
           <p class="mb-5 text-sm text-ink/60">
+            <% if (typeof query !== "undefined" && query) { %>
+            <%= homes.length %> <%= homes.length === 1 ? "stay" : "stays" %> matching
+            <span class="font-medium text-ink">“<%= query %>”</span>
+            <a
+              href="/host/homes-list"
+              class="ml-2 font-semibold text-coral underline underline-offset-4 hover:text-ink"
+              >Clear search</a
+            >
+            <% } else { %>
             <%= homes.length %> <%= homes.length === 1 ? "home" : "homes" %>
+            <% } %>
           </p>
           <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <% for (const home of homes) { %>
@@ -24,6 +34,20 @@
             </li>
             <% } %>
           </ul>
+        </div>
+        <% } else if (typeof query !== "undefined" && query) { %>
+        <div class="max-w-xl py-12">
+          <h2 class="font-display text-2xl font-medium">
+            No stays in “<%= query %>”
+          </h2>
+          <p class="mt-3 text-sm leading-6 text-ink/60">
+            Try a different city, or browse every home we list.
+          </p>
+          <a
+            class="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
+            href="/host/homes-list"
+            >Browse all stays</a
+          >
         </div>
         <% } else { %>
         <div class="max-w-xl py-12">

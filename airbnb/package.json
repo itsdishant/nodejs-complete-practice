@@ -8,6 +8,7 @@
   "scripts": {
     "build:iconoir": "node -e 'const fs=require(\"fs\");let c=fs.readFileSync(\"node_modules/iconoir/css/iconoir.css\",\"utf8\").replace(/stroke-width=\"[0-9.]+\"/g,\"stroke-width=\\\"2\\\"\");fs.writeFileSync(\"public/iconoir.css\",c);'",
     "build:css": "npm run build:iconoir && postcss styles.css --output public/styles.css",
+    "seed": "node scripts/seed-hosts-homes.js",
     "start": "npm run build:css && nodemon app.js"
   },
   "dependencies": {
