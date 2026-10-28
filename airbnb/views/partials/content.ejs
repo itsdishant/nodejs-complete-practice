@@ -6,7 +6,7 @@
     <main
       class="w-full min-h-[calc(100svh-5rem)] px-4 py-8 sm:px-6 sm:py-12 <%= ['/login', '/signup'].includes(currentPath) || currentPath.startsWith('/host/add-home') || currentPath.startsWith('/host/edit-home') ? 'flex items-center justify-center' : '' %>"
     >
-      <div class="mx-auto w-full max-w-280"><%- body %></div>
+      <div class="mx-auto w-full <%= typeof fullWidth !== 'undefined' && fullWidth ? 'max-w-full px-4 sm:px-6 lg:px-8' : 'max-w-280' %>"><%- body %></div>
     </main>
   </body>
 </html>

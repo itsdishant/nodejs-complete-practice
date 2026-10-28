@@ -12,8 +12,8 @@ const hostRouter = express.Router();
 
 // GET: Render "Add Home" form
 hostRouter.get("/add-home", (req, res) => {
-  const userDetails = req.cookies.userDetails;
-  const isLoggedIn = req.cookies.isLoggedIn;
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
 
   if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
     return res.redirect("/");
@@ -25,7 +25,7 @@ hostRouter.get("/add-home", (req, res) => {
 // POST: Validate and save a new home listing
 hostRouter.post("/add-home", (req, res) => {
   const { homeName, location, price, photo } = req.body;
-  const userDetails = req.cookies.userDetails;
+  const userDetails = req.session.userDetails;
   const numericPrice = Number(price);
 
   if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
@@ -218,10 +218,10 @@ hostRouter.get("/host-homes-list", async (req, res) => {
 // GET: Display catalog of all homes
 hostRouter.get("/homes-list", async (req, res) => {
   const homes = await Home.getAllHomes();
-  const userDetails = req.cookies.userDetails;
+  const userDetails = req.session.userDetails;
   let wishlistedIds = new Set();
 
-  if (req.cookies.isLoggedIn && userDetails && userDetails.id) {
+  if (req.session.isLoggedIn && userDetails && userDetails.id) {
     const userWishlists = await Wishlist.find({
       userId: userDetails.id,
     }).select("homeId");

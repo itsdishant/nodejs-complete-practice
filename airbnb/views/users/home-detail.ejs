@@ -1,8 +1,13 @@
 <% 
   const host = home.host || (home.hostId && typeof home.hostId === "object" ? home.hostId : null);
   let hostingSince = "Recently";
-  const userRole = (typeof cookies !== "undefined" && cookies && cookies.userDetails && cookies.userDetails.role);
-  const isLoggedIn = (typeof cookies !== "undefined" && cookies && cookies.isLoggedIn);
+  const user = (typeof userDetails !== "undefined" && userDetails) ||
+    (typeof session !== "undefined" && session && session.userDetails);
+  const userRole = user ? user.role : null;
+  const isAuth = Boolean(
+    (typeof isLoggedIn !== "undefined" && isLoggedIn) ||
+    (typeof session !== "undefined" && session && session.isLoggedIn)
+  );
   if (host && host.createdAt) {
     const d = new Date(host.createdAt);
     if (!isNaN(d.getTime())) {
@@ -76,7 +81,7 @@
         <% if (userRole !== 'host') { %>
         <div class="rounded-sm border border-pencil bg-white p-6 shadow-sm">
           <!-- Booking Form -->
-          <% if (isLoggedIn) { %>
+          <% if (isAuth) { %>
           <form
             action="/reserve/<%= home._id %>"
             method="GET"

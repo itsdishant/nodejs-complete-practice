@@ -83,6 +83,7 @@ reserveRouter.get("/reserve/:id", async (req, res) => {
 reserveRouter.post("/reserve/:id", async (req, res) => {
   const { id } = req.params;
   const home = await Home.getHomeById(id);
+  const { userDetails } = req.session;
 
   if (!home[0]) {
     return homeController(
@@ -118,6 +119,7 @@ reserveRouter.post("/reserve/:id", async (req, res) => {
     email: req.body.email || req.body.guestEmail,
     phoneNumber: req.body.phoneNumber || req.body.guestPhone,
     homeId: new ObjectId(home[0]._id),
+    userId: new ObjectId(userDetails.id),
     checkIn,
     checkOut,
     numberOfGuests: guests,
@@ -133,32 +135,14 @@ reserveRouter.post("/reserve/:id", async (req, res) => {
 // GET: Display user's bookings
 reserveRouter.get("/bookings", async (req, res) => {
   try {
-    const rawBookings = await Booking.find()
-      .sort({ createdAt: -1 })
-      .populate("homeId");
-    const bookings = rawBookings.map((booking) => ({
-      _id: booking._id.toString(),
-      bookingId: booking._id.toString(),
-      homeName: booking.homeId.name || "Stay",
-      location: booking.homeId.location || "Location unavailable",
-      photo: booking.homeId.url || "",
-      checkIn: booking.checkIn
-        ? new Date(booking.checkIn).toISOString().split("T")[0]
-        : "",
-      checkOut: booking.checkOut
-        ? new Date(booking.checkOut).toISOString().split("T")[0]
-        : "",
-      numberOfGuests: booking.numberOfGuests || 1,
-      totalPrice: booking.totalPrice,
-      totalAmount: booking.totalPrice,
-      formattedPrice: formatInr.format(booking.totalPrice || 0),
-    }));
+    const bookings = await Booking.getBookingsByUserId(
+      req.session.userDetails.id,
+    );
 
     reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
       bookings,
     });
   } catch (err) {
-    console.error("Error fetching bookings:", err);
     reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
       bookings: [],
     });
@@ -168,10 +152,10 @@ reserveRouter.get("/bookings", async (req, res) => {
 // GET: Booking details page
 reserveRouter.get("/bookings/:id", async (req, res) => {
   const { id } = req.params;
-
   let singleBooking;
+
   try {
-    singleBooking = await Booking.findById(id).populate("homeId");
+    singleBooking = await Booking.getBookingById(id);
   } catch {
     singleBooking = null;
   }
@@ -185,65 +169,13 @@ reserveRouter.get("/bookings/:id", async (req, res) => {
     );
   }
 
-  const bookingObj = singleBooking.toObject
-    ? singleBooking.toObject()
-    : singleBooking;
-  const nights =
-    singleBooking.checkIn && singleBooking.checkOut
-      ? Math.max(
-          1,
-          Math.round(
-            (new Date(singleBooking.checkOut) -
-              new Date(singleBooking.checkIn)) /
-              86400000,
-          ),
-        )
-      : 1;
-  const paidNightly = Math.round(
-    (singleBooking.totalPrice - CLEANING_FEE - SERVICE_FEE) / nights,
-  );
-  const nightlyRate =
-    paidNightly > 0 ? paidNightly : singleBooking?.homeId?.price || 0;
-  const paymentLabels = {
-    upi: "UPI",
-    card: "Card",
-    arrival: "Pay at arrival",
-  };
-  const money = (n) => formatInr.format(n || 0);
-
-  const formattedBooking = {
-    ...bookingObj,
-    _id: singleBooking._id.toString(),
-    bookingId: singleBooking._id.toString(),
-    homeName: singleBooking?.homeId?.name || "Stay",
-    location: singleBooking?.homeId?.location || "Location unavailable",
-    photo: singleBooking?.homeId?.url || "",
-    checkIn: singleBooking.checkIn
-      ? new Date(singleBooking.checkIn).toISOString().split("T")[0]
-      : "",
-    checkOut: singleBooking.checkOut
-      ? new Date(singleBooking.checkOut).toISOString().split("T")[0]
-      : "",
-    nights,
-    numberOfGuests: singleBooking.numberOfGuests,
-    totalAmount: singleBooking.totalPrice,
-    formattedTotal: money(singleBooking.totalPrice),
-    formattedNightlyRate: money(nightlyRate),
-    formattedNightsTotal: money(nightlyRate * nights),
-    formattedCleaningFee: money(CLEANING_FEE),
-    formattedServiceFee: money(SERVICE_FEE),
-    paymentMethod: singleBooking.paymentMethod,
-    paymentMethodLabel:
-      paymentLabels[singleBooking.paymentMethod] || singleBooking.paymentMethod,
-  };
-
   reserveController(
     res,
     "booking-details",
     `Booking Details | Airbnb`,
     req.path,
     {
-      booking: formattedBooking,
+      booking: singleBooking,
     },
   );
 });

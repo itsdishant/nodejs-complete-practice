@@ -2,9 +2,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const mongoose = require("mongoose");
-const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
 const dotenv = require("dotenv");
 const { homeController } = require("./controllers/appController");
+const User = require("./models/userModel");
 const userRouter = require("./routes/userRouter");
 const reserveRouter = require("./routes/reserveRouter");
 const hostRouter = require("./routes/hostRouter");
@@ -13,22 +15,51 @@ dotenv.config();
 
 const app = express();
 const port = 3000;
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_URI,
+  databaseName: "airbnb-prod",
+  collection: "sessions",
+});
+
+store.on("error", (error) => {
+  console.error("Session store error:", error);
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-// Expose cookies and authentication state to all views
-app.use((req, res, next) => {
-  res.locals.isLoggedIn =
-    req.cookies?.isLoggedIn === "true" || !!req.cookies?.isLoggedIn;
-  res.locals.userDetails = req.cookies?.userDetails || null;
-  res.locals.cookies = req.cookies || {};
-  next();
-});
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+app.use(
+  session({
+    secret: "airbnb-prod-app",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  }),
+);
+
+app.use(async (req, res, next) => {
+  res.locals.isLoggedIn = Boolean(req.session && req.session.isLoggedIn);
+  if (req.session && req.session.userDetails) {
+    if (!req.session.userDetails.fullName && req.session.userDetails.id) {
+      try {
+        const u = await User.findById(req.session.userDetails.id).select("fullName");
+        if (u) {
+          req.session.userDetails.fullName = u.fullName;
+        }
+      } catch (err) {
+        console.error("Session user fetch error:", err);
+      }
+    }
+    res.locals.userDetails = req.session.userDetails;
+  } else {
+    res.locals.userDetails = null;
+  }
+  res.locals.session = req.session;
+  next();
+});
 
 app.use(userRouter);
 app.use(reserveRouter);
@@ -36,15 +67,6 @@ app.use("/host", hostRouter);
 
 app.use((req, res) => {
   homeController(res.status(404), "404", "Airbnb | Page not found", req.path);
-});
-
-// Login guard for all routes except login, signup pages
-app.use((req, res, next) => {
-  const isLoggedIn = req.cookies.isLoggedIn;
-  if (!isLoggedIn && req.path !== "/login" && req.path !== "/signup") {
-    return res.redirect("/login");
-  }
-  next();
 });
 
 // Any thrown error (almost always a failed query) is rendered as an error page.

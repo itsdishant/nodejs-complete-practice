@@ -75,20 +75,13 @@ userRouter.post("/login", async (req, res) => {
 
   const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
 
-  res.cookie("isLoggedIn", "true", {
-    httpOnly: true,
-    maxAge,
-    sameSite: "strict",
-  });
-  res.cookie(
-    "userDetails",
-    { id: user._id, role: user.role },
-    {
-      httpOnly: true,
-      maxAge,
-      sameSite: "strict",
-    },
-  );
+  req.session.cookie.maxAge = maxAge;
+  req.session.isLoggedIn = true;
+  req.session.userDetails = {
+    id: user._id.toString(),
+    role: user.role,
+    fullName: user.fullName,
+  };
 
   res.redirect("/");
 });
@@ -161,8 +154,8 @@ userRouter.post("/signup", async (req, res) => {
 
 // GET: Display user's favourite / saved homes
 userRouter.get("/wishlist", async (req, res) => {
-  const userDetails = req.cookies.userDetails;
-  const isLoggedIn = req.cookies.isLoggedIn;
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
 
   if (!isLoggedIn || userDetails.role !== "guest") {
     return res.redirect("/");
@@ -190,8 +183,8 @@ userRouter.get("/home-detail/:id", async (req, res) => {
   }
 
   let isFavourite = false;
-  const userDetails = req.cookies.userDetails;
-  if (req.cookies.isLoggedIn && userDetails && userDetails.id) {
+  const userDetails = req.session.userDetails;
+  if (req.session.isLoggedIn && userDetails && userDetails.id) {
     const existingWishlist = await Wishlist.findOne({
       homeId: id,
       userId: userDetails.id,
@@ -213,8 +206,8 @@ userRouter.get("/home-detail/:id", async (req, res) => {
 // POST: Save or remove favourite / saved home
 userRouter.post("/wishlist/:id", async (req, res) => {
   const { id } = req.params;
-  const userDetails = req.cookies.userDetails;
-  const isLoggedIn = req.cookies.isLoggedIn;
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
 
   if (!isLoggedIn || !userDetails || userDetails.role !== "guest") {
     return res.redirect("/login");
@@ -256,15 +249,17 @@ userRouter.post("/wishlist/:id", async (req, res) => {
 
 // GET & POST: Handle user logout
 userRouter.get("/logout", (req, res) => {
-  res.clearCookie("isLoggedIn");
-  res.clearCookie("userDetails");
-  res.redirect("/login");
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.redirect("/login");
+  });
 });
 
 userRouter.post("/logout", (req, res) => {
-  res.clearCookie("isLoggedIn");
-  res.clearCookie("userDetails");
-  res.redirect("/login");
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.redirect("/login");
+  });
 });
 
 module.exports = userRouter;

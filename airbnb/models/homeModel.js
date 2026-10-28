@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { formatInr } = require("../utils/formatter");
-const booking = require("./bookingModel");
+const Booking = require("./bookingModel");
 
 const homeSchema = new mongoose.Schema(
   {
@@ -20,7 +20,7 @@ const homeSchema = new mongoose.Schema(
 
 homeSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
-    await booking.deleteMany({
+    await Booking.deleteMany({
       $or: [{ homeId: doc._id }, { homeId: doc._id.toString() }],
     });
   }

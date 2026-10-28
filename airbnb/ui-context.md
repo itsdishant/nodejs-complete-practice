@@ -151,9 +151,9 @@ Reusable EJS partials in `views/`:
 
 | Partial | Contract |
 | ------- | -------- |
-| `partials/content.ejs` | Document shell: doctype, head, header, `<main>`, and centered `<div class="mx-auto w-full max-w-280">` bounding `<%- body %>`. |
+| `partials/content.ejs` | Document shell: doctype, head, header, `<main>`, and centered `<div class="mx-auto w-full max-w-280">` bounding `<%- body %>` (or `max-w-full` if `fullWidth: true`). |
 | `partials/head.ejs` | Meta, theme color, `<title>`, iconoir CSS, and stylesheet links. |
-| `partials/header.ejs` | Sticky solid white navigation; reads `currentPath`, `cookies.isLoggedIn`, and `cookies.userDetails.role`. |
+| `partials/header.ejs` | Sticky solid white navigation; reads `currentPath`, session authentication (`isLoggedIn`, `userDetails.fullName`, `userDetails.role`), and optional `fullWidth` / `fullWidthHeader` parameter. |
 | `shared/booking-id.ejs` | Highlighted record identifier; takes `{ id }`. |
 | `shared/single-home-card.ejs` | Listing card (image, name, location, price); takes `{ home }`. |
 | `shared/toggle-wishlist-form.ejs` | Save/unsave wishlist button form; takes `{ home, showLabel }`. Label displays `"Wishlist"` (or `"Saved"` when active). |
@@ -165,8 +165,8 @@ Views are fragments only. `controllers/appController.js` renders the fragment, t
 
 ## Layout Patterns
 
-- **Standard Global Container (1120px):** Matching [airbnb.co.in](https://www.airbnb.co.in) room pages, the global document shell in `partials/content.ejs` wraps all page content inside `<div class="mx-auto w-full max-w-280">`.
-- **Navbar Width:** The header navbar in `partials/header.ejs` constrains its inner `<nav>` to `mx-auto flex w-full max-w-280 items-center justify-between` so the logo and links align with the page content below.
+- **Standard Global Container (1120px):** Matching [airbnb.co.in](https://www.airbnb.co.in) room pages, the global document shell in `partials/content.ejs` wraps all page content inside `<div class="mx-auto w-full max-w-280">` by default, or `max-w-full` if `fullWidth` is passed.
+- **Navbar Width:** The header navbar in `partials/header.ejs` constrains its inner `<nav>` to `max-w-280` (`px-4 sm:px-6`) to align with content, and only expands to full width (`max-w-full px-4 sm:px-6 lg:px-8`) when `fullWidth` or `fullWidthHeader` is requested.
 - **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`.
 - **Page header:** `border-b border-pencil pb-8`, h1 plus `mt-3 text-base text-ink/70` intro, optional right-aligned action in a `sm:flex-row sm:items-end sm:justify-between` row.
 - **Listing and booking grids:** `grid gap-6 sm:grid-cols-2 lg:grid-cols-4`, items `overflow-hidden rounded-sm border border-pencil bg-white`.
@@ -194,10 +194,11 @@ Views are fragments only. `controllers/appController.js` renders the fragment, t
 Sticky (`sticky top-0 z-40`), solid white background (`bg-white`) matching [airbnb.co.in](https://www.airbnb.co.in), separated by a subtle border (`border-b border-[#ebebeb]`).
 
 - Left: the `airbnb.` wordmark (`font-display font-semibold tracking-tight text-xl sm:text-2xl` with trailing dot in `text-coral`).
-- Right: Uniform `.nav-link` pills with Iconoir icons. Dynamic based on role:
-  - **Guest / Authenticated:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), Logout (`iconoir-log-out`).
-  - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), Logout (`iconoir-log-out`).
+- Right: Uniform `.nav-link` pills with Iconoir icons, plus a User Profile identity badge when authenticated:
+  - **Guest / Authenticated:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), User badge, Logout (`iconoir-log-out`).
+  - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), User badge, Logout (`iconoir-log-out`).
   - **Logged out:** Login (`iconoir-log-in`).
+  - **User Profile Badge:** `rounded-full border border-pencil bg-paper` pill featuring a dark circular avatar with the user's initial (`bg-ink text-white`), their `fullName` (`text-xs font-semibold text-ink truncate`), and their role as a micro-label (`text-[10px] text-ink/50 uppercase tracking-wider`). Located before Logout.
 - All links share a consistent `.nav-link` pill appearance (white pill, `border-pencil` hairline, `text-xs` label, icon, and `rounded-full`). Hover washes to `bg-mist` with an ink border. Active is a solid coral pill (`bg-coral text-white font-semibold`).
 
 ### Buttons
