@@ -8,6 +8,7 @@ const { formatInr } = require("../utils/formatter");
 const { ObjectId } = require("mongodb");
 const { body, validationResult } = require("express-validator");
 const { renderFormError } = require("../helpers/error-render");
+const { routeGuard } = require("../middlewares/route-guard");
 
 const { CLEANING_FEE, SERVICE_FEE } = Booking;
 
@@ -23,7 +24,7 @@ reserveRouter.post("/reserve", (req, res) => {
 });
 
 // GET: Display reservation checkout page for a specific home
-reserveRouter.get("/reserve/:id", async (req, res) => {
+reserveRouter.get("/reserve/:id", routeGuard("traveller"), async (req, res) => {
   const { id } = req.params;
   const home = await Home.getHomeById(id);
 
@@ -84,6 +85,7 @@ reserveRouter.get("/reserve/:id", async (req, res) => {
 // POST: Confirm reservation and redirect to the booking it created
 reserveRouter.post(
   "/reserve/:id",
+  routeGuard("traveller"),
   [
     body("guestName").custom((value, { req }) => {
       const name = (value || req.body.fullName || "").trim();
@@ -210,7 +212,7 @@ reserveRouter.post(
 );
 
 // GET: Display user's bookings
-reserveRouter.get("/bookings", async (req, res) => {
+reserveRouter.get("/bookings", routeGuard("traveller"), async (req, res) => {
   try {
     const bookings = await Booking.getBookingsByUserId(
       req.session.userDetails.id,
@@ -239,34 +241,38 @@ reserveRouter.get("/bookings", async (req, res) => {
 });
 
 // GET: Booking details page
-reserveRouter.get("/bookings/:id", async (req, res) => {
-  const { id } = req.params;
-  let singleBooking;
+reserveRouter.get(
+  "/bookings/:id",
+  routeGuard("traveller"),
+  async (req, res) => {
+    const { id } = req.params;
+    let singleBooking;
 
-  try {
-    singleBooking = await Booking.getBookingById(id);
-  } catch {
-    singleBooking = null;
-  }
+    try {
+      singleBooking = await Booking.getBookingById(id);
+    } catch {
+      singleBooking = null;
+    }
 
-  if (!singleBooking) {
-    return homeController(
-      res.status(404),
-      "404",
-      "Airbnb | Page not found",
+    if (!singleBooking) {
+      return homeController(
+        res.status(404),
+        "404",
+        "Airbnb | Page not found",
+        req.baseUrl + req.path,
+      );
+    }
+
+    reserveController(
+      res,
+      "booking-details",
+      `Booking Details | Airbnb`,
       req.baseUrl + req.path,
+      {
+        booking: singleBooking,
+      },
     );
-  }
-
-  reserveController(
-    res,
-    "booking-details",
-    `Booking Details | Airbnb`,
-    req.baseUrl + req.path,
-    {
-      booking: singleBooking,
-    },
-  );
-});
+  },
+);
 
 module.exports = reserveRouter;

@@ -15,6 +15,35 @@ const userSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
+userSchema.post("findOneAndDelete", async function (doc) {
+  if (doc) {
+    const Home = mongoose.model("Home");
+    const Booking = mongoose.model("Booking");
+    const Wishlist = mongoose.model("Wishlist");
+
+    const hostHomes = await Home.find({ hostId: doc._id }).select("_id");
+    const homeIds = hostHomes.map((h) => h._id);
+
+    await Promise.all([
+      Home.deleteMany({ hostId: doc._id }),
+      Booking.deleteMany({
+        $or: [
+          { userId: doc._id },
+          { userId: doc._id.toString() },
+          { homeId: { $in: homeIds } },
+        ],
+      }),
+      Wishlist.deleteMany({
+        $or: [
+          { userId: doc._id },
+          { userId: doc._id.toString() },
+          { homeId: { $in: homeIds } },
+        ],
+      }),
+    ]);
+  }
+});
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

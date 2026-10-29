@@ -27,7 +27,8 @@ airbnb/
 ├── styles.css           # Tailwind v4 theme tokens & component styles
 ├── controllers/         # Layout & template rendering controller
 ├── helpers/             # Home queries, form validation & error rendering
-├── models/              # Mongoose schemas (User, Home, Booking, Wishlist)
+├── middlewares/         # Route guards & role-based access control (RBAC)
+├── models/              # Mongoose schemas & cascade cleanup hooks (User, Home, Booking, Wishlist)
 ├── routes/              # Express routers (user, host, reserve)
 ├── scripts/             # Database seed script
 ├── utils/               # Currency formatters (INR)
@@ -38,27 +39,25 @@ airbnb/
 
 ## Key Features
 
-- **Browse & Search**: The home page is a search-first index — a destination
-  search, a rail of destination chips, and two horizontal rails ("Homes in
-  India", "Stays outside India"). The search form submits a real `GET` to the
-  catalog, which filters on listing name and location and reports what matched.
-- **Authentication & Roles**: Signup and login with separate Traveller and Host
-  roles, stored as `traveller` and `host`. Anything other than an explicit host
-  choice is saved as a traveller account.
-- **Persistent Sessions**: Backed by MongoDB with dynamic session length (1
-  hour standard, 30 days with "Remember me").
-- **Header & Navigation**: A sticky header on the grey `cloud` band, carrying the
-  coral logo lockup, pill navigation, and an identity chip — ink avatar with a
-  coral presence dot, full name, and role. Hosts get one high-contrast action
-  ("Airbnb your home") while every other control stays a white pill. Below `md`
-  it collapses into an avatar menu — or a single Login pill when signed out.
-- **Host Tools**: Create, edit, and delete listings with cascading cleanup of
-  related bookings. Manage own listings (`/host/homes`) and track incoming guest
-  reservations, stay schedules, and payouts (`/host/bookings`).
-- **Traveller Experience**: Browse the catalog, view stay details with host info,
-  and toggle wishlists.
-- **Reservations & Checkout**: Interactive booking with date picker, fee
-  breakdown (cleaning and service fees), and booking history.
+- **Browse & Search**: Search-first landing page with destination suggestions,
+  quick city chips, and regional listing rails. Filter queries run directly
+  against listing names and locations.
+- **Authentication & RBAC**: Dedicated traveller and host roles. A centralized
+  `routeGuard` middleware protects routes by redirecting unauthenticated users
+  to `/login` and role-mismatched users to `/`.
+- **Persistent Sessions**: Stored in MongoDB using `connect-mongodb-session`.
+- **Cascade Cleanup**: Mongoose `findOneAndDelete` lifecycle hooks purge dependent
+  documents automatically: deleting a home removes its bookings and wishlist
+  entries; deleting a host removes their listings, reservations, and bookmarks.
+- **Header & Navigation**: Sticky header on a grey band with pill links and an
+  identity chip showing the user's name, role, and avatar. On mobile viewports,
+  it collapses into a clean dropdown menu.
+- **Host Workspace**: Add, edit, and delete properties (`/host/homes`). Review
+  guest reservations, schedules, and payouts on dedicated summary and detail
+  pages (`/host/bookings`).
+- **Traveller Stays & Bookings**: Browse listings, save favorites to a wishlist,
+  and book stays with dynamic pricing breakdowns (nights, cleaning fee, and
+  service fee).
 
 ## Routes
 

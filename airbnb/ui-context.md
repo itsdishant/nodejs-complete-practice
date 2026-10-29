@@ -220,9 +220,10 @@ Sticky (`sticky top-0 z-40`), solid `bg-cloud` (`#f2f2f2`) with **no border** �
 
 - Left: the coral logo lockup — inline Iconoir `map-pin` + `airbnb` wordmark (see Logo & Brand Identity).
 - Right, `md` and up: inline `.nav-link` pills, then the identity chip.
-  - **Traveller:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), Logout (`iconoir-log-out`).
+  - **All users:** Explore (`iconoir-compass`).
+  - **Traveller:** Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), Logout (`iconoir-log-out`).
   - **Host:** Your listings (`iconoir-home`), Bookings (`iconoir-calendar`), Airbnb your home (`iconoir-sparks` / `.nav-cta`), Logout (`iconoir-log-out`).
-  - **Logged out:** Login (`iconoir-log-in`) only.
+  - **Logged out:** Login (`iconoir-log-in`).
 - **Airbnb your home is the one dark control in the chrome.** It uses `.nav-cta` — ink pill, coral icon, hover flips the fill to coral and the icon to white, active is a coral fill with a `rgba(255,90,95,.25)` halo. Every other header control is a white pill, so the host's primary action is the only high-contrast thing in the bar. Do not style a second header item this way.
 - **Identity chip** (authenticated, `md` and up): white `rounded-full` pill, `py-1 pl-1 pr-3.5`, hairline border, `shadow-xs`, hover `border-ink/30`. Inside: a 28px ink avatar holding the initial, with a **coral presence dot** (`h-2.5 w-2.5 rounded-full border-2 border-white bg-coral`, offset `-bottom-0.5 -right-0.5`) that says "signed in"; then the name (`text-xs font-semibold`, truncated at `90px → 120px → 180px`) over the role as a micro-label (`text-[10px] uppercase tracking-[0.14em] text-ink/50`). The dot and the role label both encode the session, which is why the chip carries no icon.
 - **Below `md` the header collapses instead of scrolling.** There is no horizontal scroll strip any more: signed-in users get an avatar + hamburger pill that opens a `<details>` panel (`w-64`, `rounded-sm`, `shadow-lg`) with the identity header (avatar, name, role), a divider, then the same links stacked; the CTA row renders as a filled ink row. Signed-out users get a plain Login pill — a one-item menu would be noise.

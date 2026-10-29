@@ -8,18 +8,15 @@ const Booking = require("../models/bookingModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
 const { body, validationResult } = require("express-validator");
+const { routeGuard } = require("../middlewares/route-guard");
 
 const hostRouter = express.Router();
 
+// Apply RBAC route guard: host-only access for all host routes
+hostRouter.use(routeGuard("host"));
+
 // GET: Render "Add Home" form
 hostRouter.get("/add-home", (req, res) => {
-  const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
-    return res.redirect("/");
-  }
-
   hostController(
     res,
     "add-home",
@@ -213,12 +210,6 @@ hostRouter.post("/delete-home/:id", async (req, res) => {
 // GET: Display the signed-in host's own listings
 hostRouter.get("/homes", async (req, res) => {
   const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
-    return res.redirect("/");
-  }
-
   const homes = await Home.getHomesByHost(userDetails.id);
 
   hostController(
@@ -233,12 +224,6 @@ hostRouter.get("/homes", async (req, res) => {
 // GET: Display all bookings for the signed-in host's properties
 hostRouter.get("/bookings", async (req, res) => {
   const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
-    return res.redirect("/");
-  }
-
   const bookings = await Booking.getBookingsByHostId(userDetails.id);
   const totalRevenue = bookings.reduce(
     (sum, b) => sum + (b.totalPrice || 0),
@@ -265,12 +250,6 @@ hostRouter.get("/bookings", async (req, res) => {
 // GET: Display detail page for a specific host booking
 hostRouter.get("/bookings/:id", async (req, res) => {
   const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
-    return res.redirect("/");
-  }
-
   const { id } = req.params;
   const booking = await Booking.getBookingByIdForHost(id, userDetails.id);
 

@@ -20,15 +20,16 @@ const homeSchema = new mongoose.Schema(
 
 homeSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
-    await Booking.deleteMany({
-      $or: [{ homeId: doc._id }, { homeId: doc._id.toString() }],
-    });
+    const idFilters = [{ homeId: doc._id }, { homeId: doc._id.toString() }];
+    await Promise.all([
+      Booking.deleteMany({ $or: idFilters }),
+      mongoose.model("Wishlist").deleteMany({ $or: idFilters }),
+    ]);
   }
 });
 
 const Home = mongoose.model("Home", homeSchema);
 
-// The shape every listing card and table row expects.
 const toCard = (home) => ({
   _id: home._id.toString(),
   name: home.name,
@@ -43,7 +44,6 @@ Home.getAllHomes = async function () {
   return homes.map(toCard);
 };
 
-// Only the listings a single host owns, newest first.
 Home.getHomesByHost = async function (hostId) {
   const homes = await Home.find({ hostId }).sort({ _id: -1 });
   return homes.map(toCard);

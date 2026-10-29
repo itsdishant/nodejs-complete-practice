@@ -1,4 +1,3 @@
-// ponytail: one runnable check for the receipt math, the shared page shell, and
 // that no view repeats the document boilerplate.
 // Run: node --test test/receipt.test.js
 const test = require("node:test");

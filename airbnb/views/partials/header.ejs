@@ -22,9 +22,9 @@ const initial = (userName.trim().charAt(0) || "U").toUpperCase();
 // One source of truth for the links: the inline row and the mobile panel both
 // render this list, so the two never drift apart.
 const links = [];
+links.push({ href: "/homes", label: "Explore", icon: "iconoir-compass", active: currentPath === "/homes" });
 if (isAuth) {
   if (userRole !== "host") {
-    links.push({ href: "/homes", label: "Explore", icon: "iconoir-compass", active: currentPath === "/homes" });
     links.push({ href: "/bookings", label: "Bookings", icon: "iconoir-calendar", active: currentPath === "/bookings" });
     links.push({ href: "/wishlist", label: "Wishlist", icon: "iconoir-heart", active: currentPath === "/wishlist" });
   } else {
