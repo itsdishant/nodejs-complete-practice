@@ -4,6 +4,7 @@ const homeController = require("../controllers/appController").homeController;
 const sharedController =
   require("../controllers/appController").sharedController;
 const Home = require("../models/homeModel");
+const Booking = require("../models/bookingModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
 
@@ -222,6 +223,68 @@ hostRouter.get("/homes", async (req, res) => {
     "Airbnb | Your listings",
     req.baseUrl + req.path,
     { homes },
+  );
+});
+
+// GET: Display all bookings for the signed-in host's properties
+hostRouter.get("/bookings", async (req, res) => {
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
+
+  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
+    return res.redirect("/");
+  }
+
+  const bookings = await Booking.getBookingsByHostId(userDetails.id);
+  const totalRevenue = bookings.reduce(
+    (sum, b) => sum + (b.totalPrice || 0),
+    0,
+  );
+  const totalNights = bookings.reduce((sum, b) => sum + (b.nights || 0), 0);
+
+  hostController(
+    res,
+    "host-bookings",
+    "Airbnb | Property reservations",
+    req.baseUrl + req.path,
+    {
+      bookings,
+      stats: {
+        totalBookings: bookings.length,
+        totalRevenue: formatInr.format(totalRevenue),
+        totalNights,
+      },
+    },
+  );
+});
+
+// GET: Display detail page for a specific host booking
+hostRouter.get("/bookings/:id", async (req, res) => {
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
+
+  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const booking = await Booking.getBookingByIdForHost(id, userDetails.id);
+
+  if (!booking) {
+    return homeController(
+      res.status(404),
+      "404",
+      "Airbnb | Page not found",
+      req.baseUrl + req.path,
+    );
+  }
+
+  hostController(
+    res,
+    "host-booking-detail",
+    `Reservation #${booking.bookingId.slice(-6)} | Airbnb`,
+    req.baseUrl + req.path,
+    { booking },
   );
 });
 

@@ -126,4 +126,77 @@ Booking.getBookingById = async (bookingId) => {
   }
 };
 
+Booking.getBookingsByHostId = async (hostId) => {
+  try {
+    const Home = mongoose.models.Home || mongoose.model("Home");
+    const hostHomes = await Home.find({ hostId }).select("_id");
+    const homeIds = hostHomes.map((h) => h._id);
+
+    if (homeIds.length === 0) {
+      return [];
+    }
+
+    const bookings = await Booking.find({ homeId: { $in: homeIds } })
+      .populate("homeId")
+      .sort({ createdAt: -1 });
+
+    return bookings.map((booking) => {
+      const nights =
+        booking.checkIn && booking.checkOut
+          ? Math.max(
+              1,
+              Math.round(
+                (new Date(booking.checkOut) - new Date(booking.checkIn)) /
+                  86400000,
+              ),
+            )
+          : 1;
+
+      return {
+        _id: booking._id.toString(),
+        bookingId: booking._id.toString(),
+        homeId: booking.homeId ? booking.homeId._id.toString() : null,
+        homeName: booking.homeId?.name || "Stay",
+        location: booking.homeId?.location || "Location unavailable",
+        photo: booking.homeId?.url || "",
+        guestName: booking.fullName || "Guest",
+        guestEmail: booking.email || "",
+        guestPhone: booking.phoneNumber || "",
+        checkIn: booking.checkIn
+          ? new Date(booking.checkIn).toISOString().split("T")[0]
+          : "",
+        checkOut: booking.checkOut
+          ? new Date(booking.checkOut).toISOString().split("T")[0]
+          : "",
+        nights,
+        numberOfGuests: booking.numberOfGuests || 1,
+        totalPrice: booking.totalPrice || 0,
+        formattedPrice: formatInr.format(booking.totalPrice || 0),
+        paymentMethod: booking.paymentMethod || "upi",
+        createdAt: booking.createdAt,
+      };
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+Booking.getBookingByIdForHost = async (bookingId, hostId) => {
+  try {
+    const singleBooking = await Booking.findById(bookingId).populate("homeId");
+    if (!singleBooking || !singleBooking.homeId) {
+      return null;
+    }
+
+    // Verify this booking belongs to a home owned by this host
+    if (singleBooking.homeId.hostId.toString() !== hostId.toString()) {
+      return null;
+    }
+
+    return await Booking.getBookingById(bookingId);
+  } catch {
+    return null;
+  }
+};
+
 module.exports = Booking;

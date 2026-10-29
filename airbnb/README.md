@@ -53,7 +53,8 @@ airbnb/
   ("Airbnb your home") while every other control stays a white pill. Below `md`
   it collapses into an avatar menu — or a single Login pill when signed out.
 - **Host Tools**: Create, edit, and delete listings with cascading cleanup of
-  related bookings. `/host/homes` shows only the signed-in host's own listings.
+  related bookings. Manage own listings (`/host/homes`) and track incoming guest
+  reservations, stay schedules, and payouts (`/host/bookings`).
 - **Traveller Experience**: Browse the catalog, view stay details with host info,
   and toggle wishlists.
 - **Reservations & Checkout**: Interactive booking with date picker, fee
@@ -72,7 +73,8 @@ airbnb/
 | `GET/POST` | `/reserve/:id` | Checkout for a stay |
 | `GET` | `/bookings`, `/bookings/:id` | Booking history and receipt |
 | `GET` | `/host/homes` | The signed-in host's own listings |
-| `GET/POST` | `/host/add-home`, `/host/edit-home/:id` | Create and update a listing |
+| `GET` | `/host/bookings`, `/host/bookings/:id` | Host reservations & payouts |
+| `GET/POST` | `/host/add-home`, `/host/edit-home/:id` | Manage listings |
 | `POST` | `/host/delete-home/:id` | Delete a listing and its bookings |
 | `GET` | `/logout` | End the session |
 

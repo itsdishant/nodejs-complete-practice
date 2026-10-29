@@ -161,7 +161,7 @@ Reusable EJS partials in `views/`:
 | `partials/head.ejs` | Meta, theme color, `<title>`, iconoir CSS, and stylesheet links. |
 | `partials/header.ejs` | Sticky solid white navigation; reads `currentPath`, session authentication (`isLoggedIn`, `userDetails.fullName`, `userDetails.role`), and optional `fullWidth` / `fullWidthHeader` parameter. |
 | `shared/booking-id.ejs` | Highlighted record identifier; takes `{ id }`. |
-| `shared/single-home-card.ejs` | Listing card (image, name, location, price); takes `{ home }`. |
+| `shared/single-home-card.ejs` | Listing card (image, name, location, price); takes `{ home }`. The wishlist heart is omitted when the viewer is a host — saving is a traveller action. |
 | `shared/toggle-wishlist-form.ejs` | Save/unsave wishlist button form; takes `{ home, showLabel }`. Label displays `"Wishlist"` (or `"Saved"` when active). |
 | `shared/add-edit-home-success.ejs` | Post-publish confirmation summary. |
 
@@ -197,6 +197,16 @@ Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` 
     - **Card 1: Reservation Form Card** (with date pickers, guests selector, and Reserve button for logged-in users; "Login to reserve" CTA for logged-out users; hidden for hosts).
     - **Card 2: Listing Details Card** (compact key-value rows for Location, Price per night, and Photo link).
     - **Card 3: Host Information Card** (Host avatar initial, full name, "Hosting since [Month Year]", and contact email).
+- **Host Reservations Page (`views/host/host-bookings.ejs`):**
+  - Route: `/host/bookings`.
+  - Header with title, intro, and links to "Your listings" and "Add home".
+  - Three summary metric cards: Total reservations, Nights booked, Gross earnings.
+  - Responsive table showing property image/name/location, primary guest contact info (email/phone), stay dates with Confirmed badge, nights & guests count, total payout, and direct link to reservation details.
+  - Left-aligned empty state with listings navigation.
+- **Host Reservation Detail Page (`views/host/host-booking-detail.ejs`):**
+  - Route: `/host/bookings/:id`.
+  - Scoped to properties owned by the signed-in host; returns 404 for unauthorized access.
+  - 2-column layout matching detail pages: Left column contains listing photo banner with public listing link, check-in/out schedule cards, and complete guest contact details (with `mailto:` and `tel:` links). Right column contains sticky payout breakdown (nightly rate, cleaning fee, service fee, total) and quick host contact actions.
 - **Empty states:** `max-w-xl py-12`, `font-display text-2xl font-medium` heading, `text-sm leading-6 text-ink/60` copy, one coral CTA. Left-aligned in the content flow — never centered on the page.
 - **Hover:** cards change border to `border-ink/30` or title to `text-coral`; only images scale (`group-hover:scale-105`). No card lift, no shadow growth.
 
@@ -211,7 +221,7 @@ Sticky (`sticky top-0 z-40`), solid `bg-cloud` (`#f2f2f2`) with **no border** �
 - Left: the coral logo lockup — inline Iconoir `map-pin` + `airbnb` wordmark (see Logo & Brand Identity).
 - Right, `md` and up: inline `.nav-link` pills, then the identity chip.
   - **Traveller:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), Logout (`iconoir-log-out`).
-  - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), Logout (`iconoir-log-out`).
+  - **Host:** Your listings (`iconoir-home`), Bookings (`iconoir-calendar`), Airbnb your home (`iconoir-sparks` / `.nav-cta`), Logout (`iconoir-log-out`).
   - **Logged out:** Login (`iconoir-log-in`) only.
 - **Airbnb your home is the one dark control in the chrome.** It uses `.nav-cta` — ink pill, coral icon, hover flips the fill to coral and the icon to white, active is a coral fill with a `rgba(255,90,95,.25)` halo. Every other header control is a white pill, so the host's primary action is the only high-contrast thing in the bar. Do not style a second header item this way.
 - **Identity chip** (authenticated, `md` and up): white `rounded-full` pill, `py-1 pl-1 pr-3.5`, hairline border, `shadow-xs`, hover `border-ink/30`. Inside: a 28px ink avatar holding the initial, with a **coral presence dot** (`h-2.5 w-2.5 rounded-full border-2 border-white bg-coral`, offset `-bottom-0.5 -right-0.5`) that says "signed in"; then the name (`text-xs font-semibold`, truncated at `90px → 120px → 180px`) over the role as a micro-label (`text-[10px] uppercase tracking-[0.14em] text-ink/50`). The dot and the role label both encode the session, which is why the chip carries no icon.
