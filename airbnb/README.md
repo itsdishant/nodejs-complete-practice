@@ -145,6 +145,7 @@ Travellers can be created through `/signup`.
 ## Available Scripts
 
 - `npm start`: Builds CSS assets and runs the app with Nodemon.
+- `npm test`: Runs automated database tests with Node.js built-in test runner.
 - `npm run seed`: Creates the seven demo hosts and 42 stays — 30 in India, 12
   abroad. Safe to re-run; hosts are matched by email and stays by host + name,
   so a second run creates nothing and never deletes existing data.

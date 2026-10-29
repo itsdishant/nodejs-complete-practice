@@ -2,10 +2,11 @@ const express = require("express");
 const homeController = require("../controllers/appController").homeController;
 const reserveController =
   require("../controllers/appController").reserveController;
+const mongoose = require("mongoose");
 const Home = require("../models/homeModel");
 const Booking = require("../models/bookingModel");
 const { formatInr } = require("../utils/formatter");
-const { ObjectId } = require("mongodb");
+const { ObjectId } = mongoose.Types;
 const { body, validationResult } = require("express-validator");
 const { renderFormError } = require("../helpers/error-render");
 const { routeGuard } = require("../middlewares/route-guard");

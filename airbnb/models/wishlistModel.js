@@ -20,29 +20,24 @@ const wishlistSchema = new mongoose.Schema(
 const Wishlist = mongoose.model("Wishlist", wishlistSchema);
 
 Wishlist.getAllWishlists = async function (userId) {
-  const wishlist = await Wishlist.find({ userId: userId });
+  const wishlist = await Wishlist.find({ userId }).populate("homeId");
   if (!wishlist) return [];
 
-  const wishlistHomes = await Home.find({
-    _id: { $in: wishlist.map((item) => item.homeId) },
-  });
-
-  if (!wishlistHomes) return [];
-
-  const finalWishlist = wishlistHomes.map((home) => {
-    return {
-      _id: home._id.toString(),
-      hostId: home.hostId,
-      name: home.name,
-      location: home.location,
-      price: home.price,
-      url: home.url,
-      formattedPrice: formatInr.format(home.price),
-      isFavourite: true,
-    };
-  });
-
-  return finalWishlist;
+  return wishlist
+    .filter((item) => item.homeId)
+    .map((item) => {
+      const home = item.homeId;
+      return {
+        _id: home._id.toString(),
+        hostId: home.hostId,
+        name: home.name,
+        location: home.location,
+        price: home.price,
+        url: home.url,
+        formattedPrice: formatInr.format(home.price),
+        isFavourite: true,
+      };
+    });
 };
 
 module.exports = Wishlist;

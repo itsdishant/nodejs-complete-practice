@@ -9,22 +9,21 @@
     "build:iconoir": "node -e 'const fs=require(\"fs\");let c=fs.readFileSync(\"node_modules/iconoir/css/iconoir.css\",\"utf8\").replace(/stroke-width=\"[0-9.]+\"/g,\"stroke-width=\\\"2\\\"\");fs.writeFileSync(\"public/iconoir.css\",c);'",
     "build:css": "npm run build:iconoir && postcss styles.css --output public/styles.css",
     "seed": "node scripts/seed-hosts-homes.js",
+    "test": "node --test test/**/*.test.js",
     "start": "npm run build:css && nodemon app.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
     "connect-mongodb-session": "^5.0.0",
     "dotenv": "^18.0.8",
     "ejs": "^7.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
-    "iconoir": "^7.12.1",
-    "mongodb": "^7.7.0",
     "mongoose": "^9.11.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "iconoir": "^7.12.1",
     "nodemon": "^3.1.14",
     "postcss": "^8.5.28",
     "postcss-cli": "^12.0.0",
