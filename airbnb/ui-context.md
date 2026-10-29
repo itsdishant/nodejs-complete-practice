@@ -163,7 +163,7 @@ Reusable EJS partials in `views/`:
 | `shared/booking-id.ejs` | Highlighted record identifier; takes `{ id }`. |
 | `shared/single-home-card.ejs` | Listing card (image, name, location, price); takes `{ home }`. The wishlist heart is omitted when the viewer is a host — saving is a traveller action. |
 | `shared/toggle-wishlist-form.ejs` | Save/unsave wishlist button form; takes `{ home, showLabel }`. Label displays `"Wishlist"` (or `"Saved"` when active). |
-| `shared/add-edit-home-success.ejs` | Post-publish confirmation summary. |
+| `shared/add-edit-home-success.ejs` | Centered post-publish confirmation summary with live listing photo preview card, property details, and navigation CTAs. |
 
 Views are fragments only. `controllers/appController.js` renders the fragment, then injects it into `partials/content.ejs` as `body`; page helpers are `homeController`, `hostController`, `reserveController`, `sharedController`, `userController`.
 

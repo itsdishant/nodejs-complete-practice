@@ -9,11 +9,10 @@ const User = require("../models/userModel");
 const { renderFormError } = require("../helpers/error-render");
 const Wishlist = require("../models/wishlistModel");
 const { homesFor } = require("../helpers/home-data");
+const { body, validationResult } = require("express-validator");
 
 const userRouter = express.Router();
 
-// A home counts as international when its location ends in a country other
-// than India ("Ubud, Bali, Indonesia"). Indian listings read "Siolim, Goa".
 const FOREIGN_COUNTRY =
   /,\s*(Indonesia|Thailand|Japan|Portugal|Greece|Italy|Spain|France|Sri Lanka|Nepal|Bhutan|Maldives|Malaysia|Singapore|Vietnam|UAE|United Arab Emirates)$/i;
 
@@ -26,8 +25,6 @@ userRouter.get("/", async (req, res) => {
     (home) => !FOREIGN_COUNTRY.test(home.location),
   );
 
-  // Destinations are the city part of "City, Region" / "City, Region, Country",
-  // ordered by how many homes each one has.
   const counts = new Map();
   for (const home of homes) {
     const city = home.location.split(",")[0].trim();
@@ -57,56 +54,64 @@ userRouter.get("/login", (req, res) => {
 });
 
 // POST: Handle login form submission
-userRouter.post("/login", async (req, res) => {
-  const { email, password, rememberMe } = req.body;
-  const user = await User.findOne({ email });
+userRouter.post("/login", [
+  body("email")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Email is not valid.")
+    .custom(async (email) => {
+      const emailExists = await User.findOne({ email: email });
+      if (!emailExists) {
+        throw new Error("User not found. Please check your email address.");
+      }
+    }),
+  body("password")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Password is required.")
+    .custom(async (password, { req }) => {
+      const user = await User.findOne({
+        password: password,
+        email: req.body.email,
+      });
+      if (!user) {
+        throw new Error("Incorrect password. Please try again.");
+      }
+    }),
+  async (req, res) => {
+    const { email, rememberMe } = req.body;
+    const errors = validationResult(req);
 
-  if (!email || !password) {
-    return renderFormError(
-      res,
-      "login",
-      "Login to Airbnb",
-      "user",
-      "Please provide email and password.",
-      req,
-    );
-  }
+    if (!errors.isEmpty()) {
+      return renderFormError(
+        res,
+        "login",
+        "Login to Airbnb",
+        "user",
+        errors.array()[0].msg,
+        req,
+      );
+    }
 
-  if (!user) {
-    return renderFormError(
-      res,
-      "login",
-      "Login to Airbnb",
-      "user",
-      "User not found. Please check your email address.",
-      req,
-    );
-  }
+    const user = await User.findOne({ email });
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
 
-  if (user.password !== password) {
-    return renderFormError(
-      res,
-      "login",
-      "Login to Airbnb",
-      "user",
-      "Incorrect password. Please try again.",
-      req,
-    );
-  }
+    req.session.cookie.maxAge = maxAge;
+    req.session.isLoggedIn = true;
+    req.session.userDetails = {
+      id: user._id.toString(),
+      role: user.role,
+      fullName: user.fullName,
+      email: user.email,
+    };
 
-  const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
-
-  req.session.cookie.maxAge = maxAge;
-  req.session.isLoggedIn = true;
-  req.session.userDetails = {
-    id: user._id.toString(),
-    role: user.role,
-    fullName: user.fullName,
-    email: user.email,
-  };
-
-  res.redirect("/");
-});
+    res.redirect("/");
+  },
+]);
 
 // GET: Display signup page
 userRouter.get("/signup", (req, res) => {
@@ -114,66 +119,91 @@ userRouter.get("/signup", (req, res) => {
 });
 
 // POST: Handle signup form submission
-userRouter.post("/signup", async (req, res) => {
-  const { fullName, email, password, role } = req.body;
+userRouter.post("/signup", [
+  body("fullName")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Full name is required.")
+    .matches(/^[a-zA-Z ]+$/)
+    .withMessage("Full name can only contain letters and spaces."),
+  body("email")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Email is not valid.")
+    .custom(async (email) => {
+      const emailExists = await User.exists({ email: email });
+      if (emailExists) {
+        throw new Error(
+          "Email address already exists. Please use another email address.",
+        );
+      }
+    }),
+  body("password")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Password is required.")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long."),
+  body("role")
+    .trim()
+    .escape()
+    .notEmpty()
+    .withMessage("Role is required.")
+    .isIn(["host", "traveller"])
+    .withMessage("Role must be host or traveller."),
+  async (req, res) => {
+    const { fullName, email, password, role } = req.body;
+    const errors = validationResult(req);
 
-  const emailExists = await User.exists({ email: email });
-
-  if (emailExists) {
-    return renderFormError(
-      res,
-      "signup",
-      "Signup to Airbnb",
-      "user",
-      "Email address already exists. Please use another email address.",
-      req,
-    );
-  }
-
-  if (!fullName || !email || !password) {
-    return renderFormError(
-      res,
-      "signup",
-      "Signup to Airbnb",
-      "user",
-      "Please provide full name, email and password.",
-      req,
-    );
-  }
-
-  const newUser = new User({
-    fullName,
-    email,
-    password,
-    // Anything other than an explicit host choice is a traveller account.
-    role: role === "host" ? "host" : "traveller",
-  });
-
-  newUser
-    .save()
-    .then(() => {
-      userController(
-        res,
-        "signup-success",
-        "Airbnb | Signup Success",
-        req.baseUrl + req.path,
-        {
-          fullName,
-          email,
-        },
-      );
-    })
-    .catch((error) => {
+    if (!errors.isEmpty()) {
       return renderFormError(
         res,
         "signup",
         "Signup to Airbnb",
         "user",
-        error.message,
+        errors.array()[0].msg,
         req,
       );
+    }
+
+    const newUser = new User({
+      fullName,
+      email,
+      password,
+      role: role === "host" ? "host" : "traveller",
     });
-});
+
+    newUser
+      .save()
+      .then(() => {
+        userController(
+          res,
+          "signup-success",
+          "Airbnb | Signup Success",
+          req.baseUrl + req.path,
+          {
+            fullName,
+            email,
+          },
+        );
+      })
+      .catch((error) => {
+        return renderFormError(
+          res,
+          "signup",
+          "Signup to Airbnb",
+          "user",
+          error.message,
+          req,
+        );
+      });
+  },
+]);
 
 // GET: Display user's favourite / saved homes
 userRouter.get("/wishlist", async (req, res) => {

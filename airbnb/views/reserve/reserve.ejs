@@ -63,8 +63,15 @@
       %>
 
       <!-- Guest Contact Form -->
-      <form action="/reserve/<%= home._id %>" method="POST"
+      <form action="/reserve/<%= home._id %>" method="POST" novalidate
         class="w-full space-y-8 rounded-sm border border-pencil bg-white p-6 shadow-sm">
+        <!-- Error Alert -->
+        <% if (typeof formError !== "undefined" && formError) { %>
+        <div class="rounded-sm border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-ink" role="alert">
+          <%= formError %>
+        </div>
+        <% } %>
+
         <!-- Hidden Trip Inputs -->
         <input type="hidden" name="checkIn" value="<%= reservationDetails ? reservationDetails.checkIn : '' %>" />
         <input type="hidden" name="checkOut" value="<%= reservationDetails ? reservationDetails.checkOut : '' %>" />
@@ -82,7 +89,7 @@
                 Full name
               </label>
               <input type="text" id="guestName" name="guestName" required placeholder="Your Full Name"
-                value="<%= user ? user.fullName : '' %>" class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
+                value="<%= typeof formValues !== 'undefined' && formValues.guestName ? formValues.guestName : (user ? user.fullName : '') %>" class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -91,13 +98,14 @@
                   Email address
                 </label>
                 <input type="email" id="guestEmail" name="guestEmail" required placeholder="Your Email Address" 
-                  value="<%= user ? user.email : '' %>"  class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
+                  value="<%= typeof formValues !== 'undefined' && formValues.guestEmail ? formValues.guestEmail : (user ? user.email : '') %>"  class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
               </div>
               <div>
                 <label for="guestPhone" class="block text-xs font-semibold uppercase text-ink/70">
                   Phone number
                 </label>
                 <input type="tel" id="guestPhone" name="guestPhone" required placeholder="Your Phone Number"
+                  value="<%= typeof formValues !== 'undefined' && formValues.guestPhone ? formValues.guestPhone : '' %>"
                   class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
               </div>
             </div>

@@ -16,7 +16,15 @@ const CONTROLLERS = {
   reserve: reserveController,
 };
 
-function renderFormError(res, fileName, pageTitle, moduleName, formError, req) {
+function renderFormError(
+  res,
+  fileName,
+  pageTitle,
+  moduleName,
+  formError,
+  req,
+  extraData = {},
+) {
   const controller = CONTROLLERS[moduleName];
 
   if (!controller) {
@@ -25,10 +33,17 @@ function renderFormError(res, fileName, pageTitle, moduleName, formError, req) {
     );
   }
 
-  return controller(res, fileName, pageTitle, req?.path, {
-    formValues: req?.body,
-    formError,
-  });
+  return controller(
+    res,
+    fileName,
+    pageTitle,
+    (req?.baseUrl || "") + (req?.path || ""),
+    {
+      formValues: req?.body,
+      formError,
+      ...extraData,
+    },
+  );
 }
 
 module.exports = {

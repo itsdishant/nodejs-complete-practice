@@ -1,51 +1,76 @@
-<section class="w-full max-w-2xl">
-  <h1 class="font-display text-4xl font-medium sm:text-5xl">
+<section class="mx-auto flex w-full max-w-md flex-col items-center text-center">
+  <!-- Success Badge -->
+  <div class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-600 shadow-2xs">
+    <i class="iconoir-check text-2xl font-semibold" aria-hidden="true"></i>
+  </div>
+
+  <!-- Heading -->
+  <h1 class="font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl">
     <%= isEdit ? "Listing updated" : "Listing published" %>
   </h1>
-  <p class="mt-4 max-w-xl text-base leading-7 text-ink/70">
+
+  <!-- Description -->
+  <p class="mt-2.5 max-w-sm text-base text-ink/70">
     <% if (isEdit) { %>
-      Your updates are saved and live for travellers to view.
+      Your updates are saved and live for travellers to explore and book.
     <% } else { %>
-      Your home is now live and ready for travellers to explore.
+      Your home is now live and ready for travellers around the world to book.
     <% } %>
   </p>
-  <dl class="mt-8 max-w-xl divide-y divide-pencil border-y border-pencil">
-    <div class="py-4 sm:flex sm:gap-8">
-      <dt class="w-32 shrink-0 text-sm text-ink/60">Home name</dt>
-      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
+
+  <!-- Property Preview Card -->
+  <div class="mt-7 w-full overflow-hidden rounded-sm border border-pencil bg-white text-left shadow-sm">
+    <!-- Image Preview Banner -->
+    <div class="relative aspect-16/10 w-full overflow-hidden bg-mist">
+      <img
+        src="<%= photo %>"
+        alt="Photo of <%= homeName %>"
+        class="h-full w-full object-cover"
+        loading="eager"
+      />
+      <div class="absolute left-3 top-3">
+        <span class="inline-flex items-center rounded-xs border border-emerald-200/60 bg-white/95 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-800 shadow-xs backdrop-blur-xs">
+          Live listing
+        </span>
+      </div>
+    </div>
+
+    <!-- Card Content -->
+    <div class="p-5">
+      <div class="flex items-center justify-between text-xs text-ink/60">
+        <span class="flex items-center gap-1.5 truncate">
+          <i class="iconoir-map-pin text-sm text-coral shrink-0" aria-hidden="true"></i>
+          <span class="truncate"><%= location %></span>
+        </span>
+      </div>
+
+      <h2 class="mt-1.5 truncate font-display text-lg font-medium text-ink">
         <%= homeName %>
-      </dd>
+      </h2>
+
+      <div class="mt-4 flex items-baseline justify-between border-t border-pencil/70 pt-3 text-sm">
+        <span class="text-xs text-ink/60">Price per night</span>
+        <div class="text-right">
+          <span class="font-display text-base font-semibold text-ink"><%= formattedPrice %></span>
+          <span class="text-xs text-ink/60"> / night</span>
+        </div>
+      </div>
     </div>
-    <div class="py-4 sm:flex sm:gap-8">
-      <dt class="w-32 shrink-0 text-sm text-ink/60">Location</dt>
-      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
-        <%= location %>
-      </dd>
-    </div>
-    <div class="py-4 sm:flex sm:gap-8">
-      <dt class="w-32 shrink-0 text-sm text-ink/60">Price</dt>
-      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
-        <%= formattedPrice %> per night
-      </dd>
-    </div>
-    <div class="py-4 sm:flex sm:gap-8">
-      <dt class="w-32 shrink-0 text-sm text-ink/60">Photo</dt>
-      <dd class="mt-1 wrap-break-word text-sm font-medium sm:mt-0">
-        <a
-          class="text-coral underline underline-offset-4"
-          href="<%= photo %>"
-          target="_blank"
-          rel="noopener noreferrer"
-          >View photo</a
-        >
-      </dd>
-    </div>
-  </dl>
-  <div class="mt-8 flex flex-wrap items-center gap-4">
+  </div>
+
+  <!-- Action CTA Buttons -->
+  <div class="mt-7 flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
     <a
-      class="inline-flex min-h-12 items-center justify-center rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
       href="/host/homes"
-      >Manage your listings</a
+      class="inline-flex min-h-12 flex-1 items-center justify-center rounded-sm bg-coral px-6 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
     >
+      Manage your listings
+    </a>
+    <a
+      href="/host/add-home"
+      class="inline-flex min-h-12 flex-1 items-center justify-center rounded-sm border border-pencil bg-white px-6 text-sm font-semibold text-ink transition-colors hover:border-ink hover:bg-mist focus-visible:outline-offset-4"
+    >
+      <%= isEdit ? "List a new home" : "List another home" %>
+    </a>
   </div>
 </section>

@@ -7,6 +7,7 @@ const Home = require("../models/homeModel");
 const Booking = require("../models/bookingModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
+const { body, validationResult } = require("express-validator");
 
 const hostRouter = express.Router();
 
@@ -19,88 +20,89 @@ hostRouter.get("/add-home", (req, res) => {
     return res.redirect("/");
   }
 
-  hostController(res, "add-home", "Airbnb | List your home", req.baseUrl + req.path);
+  hostController(
+    res,
+    "add-home",
+    "Airbnb | List your home",
+    req.baseUrl + req.path,
+  );
 });
 
 // POST: Validate and save a new home listing
-hostRouter.post("/add-home", (req, res) => {
-  const { homeName, location, price, photo } = req.body;
-  const userDetails = req.session.userDetails;
-  const numericPrice = Number(price);
+hostRouter.post(
+  "/add-home",
+  [
+    body("homeName").trim().notEmpty().withMessage("Home name is required"),
+    body("location").trim().notEmpty().withMessage("Location is required"),
+    body("price")
+      .trim()
+      .notEmpty()
+      .withMessage("Price is required")
+      .isFloat({ gt: 0 })
+      .withMessage("Price must be a valid number greater than ₹0."),
+    body("photo")
+      .trim()
+      .notEmpty()
+      .withMessage("Photo URL is required")
+      .isURL({ protocols: ["http", "https"], require_protocol: true })
+      .withMessage("Photo URL must begin with http:// or https://."),
+  ],
+  (req, res) => {
+    const { homeName, location, price, photo } = req.body;
+    const userDetails = req.session.userDetails;
+    const numericPrice = Number(price);
+    const errors = validationResult(req);
 
-  if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-    return renderFormError(
-      res,
-      "add-home",
-      "Airbnb | List your home",
-      "host",
-      "Enter a valid price greater than ₹0.",
-      req,
-    );
-  }
-
-  let photoUrl;
-
-  try {
-    photoUrl = new URL(photo);
-  } catch {
-    return renderFormError(
-      res,
-      "add-home",
-      "Airbnb | List your home",
-      "host",
-      "Enter a valid photo URL.",
-      req,
-    );
-  }
-
-  if (!["http:", "https:"].includes(photoUrl.protocol) || !photoUrl.hostname) {
-    return renderFormError(
-      res,
-      "add-home",
-      "Airbnb | List your home",
-      "host",
-      "Photo URLs must begin with http:// or https://.",
-      req,
-    );
-  }
-
-  const newHome = new Home({
-    hostId: userDetails.id,
-    name: homeName,
-    location,
-    price: numericPrice,
-    url: photoUrl.toString(),
-  });
-
-  newHome
-    .save()
-    .then(() => {
-      sharedController(
-        res,
-        "add-edit-home-success",
-        "Airbnb | Listing published",
-        req.baseUrl + req.path,
-        {
-          homeName,
-          location,
-          formattedPrice: formatInr.format(numericPrice),
-          photo: photoUrl.toString(),
-          isEdit: false,
-        },
-      );
-    })
-    .catch((error) => {
+    if (!errors.isEmpty()) {
       return renderFormError(
         res,
         "add-home",
         "Airbnb | List your home",
         "host",
-        error.message,
+        errors.array()[0].msg,
         req,
       );
+    }
+
+    const photoUrl = new URL(photo);
+
+    const newHome = new Home({
+      hostId: userDetails.id,
+      name: homeName,
+      location,
+      price: numericPrice,
+      url: photoUrl.toString(),
     });
-});
+
+    newHome
+      .save()
+      .then(() => {
+        sharedController(
+          res,
+          "add-edit-home-success",
+          "Airbnb | Listing published",
+          req.baseUrl + req.path,
+          {
+            homeName,
+            location,
+            formattedPrice: formatInr.format(numericPrice),
+            photo: photoUrl.toString(),
+            isEdit: false,
+          },
+        );
+      })
+      .catch((error) => {
+        return renderFormError(
+          res,
+          "add-home",
+          "Airbnb | List your home",
+          "host",
+          error.message,
+          req,
+        );
+      });
+  },
+);
 
 // GET: Display edit home form
 hostRouter.get("/edit-home/:id", async (req, res) => {
@@ -116,76 +118,78 @@ hostRouter.get("/edit-home/:id", async (req, res) => {
     );
   }
 
-  hostController(res, "edit-home", `Edit ${home[0].name} | Airbnb`, req.baseUrl + req.path, {
-    homeId: home[0]._id,
-    formValues: home[0],
-  });
-});
-
-// POST: Validate and save an edited home listing
-hostRouter.post("/edit-home/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name, location, price, photo } = req.body;
-  const numericPrice = Number(price);
-
-  if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-    return renderFormError(
-      res,
-      "edit-home",
-      "Airbnb | List your home",
-      "host",
-      "Enter a valid price greater than ₹0.",
-      req,
-    );
-  }
-
-  let photoUrl;
-
-  try {
-    photoUrl = new URL(photo);
-  } catch {
-    return renderFormError(
-      res,
-      "edit-home",
-      "Airbnb | List your home",
-      "host",
-      "Enter a valid photo URL.",
-      req,
-    );
-  }
-
-  if (!["http:", "https:"].includes(photoUrl.protocol) || !photoUrl.hostname) {
-    return renderFormError(
-      res,
-      "edit-home",
-      "Airbnb | List your home",
-      "host",
-      "Photo URLs must begin with http:// or https://.",
-      req,
-    );
-  }
-
-  await Home.findByIdAndUpdate(id, {
-    name,
-    location,
-    price: numericPrice,
-    url: photoUrl.toString(),
-  });
-
-  sharedController(
+  hostController(
     res,
-    "add-edit-home-success",
-    "Airbnb | Listing updated",
+    "edit-home",
+    `Edit ${home[0].name} | Airbnb`,
     req.baseUrl + req.path,
     {
-      homeName: name,
-      location,
-      formattedPrice: formatInr.format(numericPrice),
-      photo: photoUrl.toString(),
-      isEdit: true,
+      homeId: home[0]._id,
+      formValues: home[0],
     },
   );
 });
+
+// POST: Validate and save an edited home listing
+hostRouter.post(
+  "/edit-home/:id",
+  [
+    body("name").trim().notEmpty().withMessage("Home name is required"),
+    body("location").trim().notEmpty().withMessage("Location is required"),
+    body("price")
+      .trim()
+      .notEmpty()
+      .withMessage("Price is required")
+      .isFloat({ gt: 0 })
+      .withMessage("Price must be a valid number greater than ₹0."),
+    body("photo")
+      .trim()
+      .notEmpty()
+      .withMessage("Photo URL is required")
+      .isURL({ protocols: ["http", "https"], require_protocol: true })
+      .withMessage("Photo URL must begin with http:// or https://."),
+  ],
+  async (req, res) => {
+    const { id } = req.params;
+    const { name, location, price, photo } = req.body;
+    const numericPrice = Number(price);
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return renderFormError(
+        res,
+        "edit-home",
+        "Airbnb | Edit your listing",
+        "host",
+        errors.array()[0].msg,
+        req,
+      );
+    }
+
+    const photoUrl = new URL(photo);
+
+    await Home.findByIdAndUpdate(id, {
+      name,
+      location,
+      price: numericPrice,
+      url: photoUrl.toString(),
+    });
+
+    sharedController(
+      res,
+      "add-edit-home-success",
+      "Airbnb | Listing updated",
+      req.baseUrl + req.path,
+      {
+        homeName: name,
+        location,
+        formattedPrice: formatInr.format(numericPrice),
+        photo: photoUrl.toString(),
+        isEdit: true,
+      },
+    );
+  },
+);
 
 // DELETE: Delete a home listing
 hostRouter.post("/delete-home/:id", async (req, res) => {
