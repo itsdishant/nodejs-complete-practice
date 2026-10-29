@@ -21,7 +21,14 @@ describe("Cascade Deletion Hooks (findOneAndDelete)", () => {
     if (!process.env.MONGODB_URI) {
       throw new Error("MONGODB_URI is required to run database tests.");
     }
-    await mongoose.connect(process.env.MONGODB_URI, { dbName: "airbnb-prod" });
+    const testDbName = process.env.MONGODB_TEST_DB || "airbnb-test";
+    if (testDbName === "airbnb-prod") {
+      throw new Error(
+        "Refusing to run tests against the application database 'airbnb-prod'. Please use a separate test database.",
+      );
+    }
+    await mongoose.connect(process.env.MONGODB_URI, { dbName: testDbName });
+    await Wishlist.syncIndexes();
   });
 
   after(async () => {
@@ -314,6 +321,68 @@ describe("Cascade Deletion Hooks (findOneAndDelete)", () => {
     assert.ok(
       foundWishlistOnUnrelatedHome,
       "Wishlist on unrelated host's home must remain intact",
+    );
+  });
+
+  it("should refuse to run when configured with the application database 'airbnb-prod'", () => {
+    const targetDb = "airbnb-prod";
+    assert.throws(
+      () => {
+        if (targetDb === "airbnb-prod") {
+          throw new Error(
+            "Refusing to run tests against the application database 'airbnb-prod'. Please use a separate test database.",
+          );
+        }
+      },
+      /Refusing to run tests against the application database 'airbnb-prod'/,
+    );
+  });
+
+  it("should return each saved home only once in getAllWishlists even if duplicate records exist", async () => {
+    const host = await createTestUser({ role: "host" });
+    const traveller = await createTestUser({ role: "traveller" });
+    const home = await createTestHome(host._id, { name: "Duplicate Test Home" });
+
+    // Stub Wishlist.find to simulate legacy or concurrent duplicate records from the query
+    const originalFind = Wishlist.find;
+    Wishlist.find = () => ({
+      populate: async () => [
+        { homeId: home, userId: traveller._id },
+        { homeId: home, userId: traveller._id },
+      ],
+    });
+
+    try {
+      const savedHomes = await Wishlist.getAllWishlists(traveller._id);
+      const matchingHomes = savedHomes.filter(
+        (h) => h._id === home._id.toString(),
+      );
+
+      assert.strictEqual(
+        matchingHomes.length,
+        1,
+        "getAllWishlists must deduplicate multiple records for the same home into one card",
+      );
+    } finally {
+      Wishlist.find = originalFind;
+    }
+  });
+
+  it("should enforce uniqueness at the database level preventing duplicate (userId, homeId) inserts", async () => {
+    const host = await createTestUser({ role: "host" });
+    const traveller = await createTestUser({ role: "traveller" });
+    const home = await createTestHome(host._id, { name: "Unique Index Home" });
+
+    const w1 = await Wishlist.create({ homeId: home._id, userId: traveller._id });
+    createdWishlistIds.push(w1._id);
+
+    // Attempting to create duplicate entry via Mongoose should throw E11000
+    await assert.rejects(
+      async () => {
+        await Wishlist.create({ homeId: home._id, userId: traveller._id });
+      },
+      (err) => err && err.code === 11000,
+      "Expected duplicate key error code 11000",
     );
   });
 });

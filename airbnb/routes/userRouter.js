@@ -270,29 +270,29 @@ userRouter.post("/wishlist/:id", routeGuard("traveller"), async (req, res) => {
   const backUrl = req.get("Referrer") || "/wishlist";
 
   if (existingWishlist) {
-    await Wishlist.deleteOne({ homeId: id, userId: userDetails.id });
+    await Wishlist.deleteMany({ homeId: id, userId: userDetails.id });
     return res.redirect(backUrl);
   } else {
-    const newWishlist = new Wishlist({
-      homeId: id,
-      userId: userDetails.id,
-    });
-
-    newWishlist
-      .save()
-      .then(() => {
-        return res.redirect(backUrl);
-      })
-      .catch((error) => {
-        return renderFormError(
-          res,
-          "wishlist",
-          "Airbnb | Wishlist",
-          "user",
-          error.message,
-          req,
-        );
+    try {
+      await Wishlist.create({
+        homeId: id,
+        userId: userDetails.id,
       });
+      return res.redirect(backUrl);
+    } catch (error) {
+      // Competing save: duplicate key error (11000) means already saved
+      if (error.code === 11000) {
+        return res.redirect(backUrl);
+      }
+      return renderFormError(
+        res,
+        "wishlist",
+        "Airbnb | Wishlist",
+        "user",
+        error.message,
+        req,
+      );
+    }
   }
 });
 
