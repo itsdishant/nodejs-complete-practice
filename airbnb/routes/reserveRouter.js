@@ -11,13 +11,13 @@ const { CLEANING_FEE, SERVICE_FEE } = Booking;
 
 const reserveRouter = express.Router();
 
-// Redirect /reserve to /host/homes-list
+// Redirect /reserve to /homes
 reserveRouter.get("/reserve", (req, res) => {
-  res.redirect("/host/homes-list");
+  res.redirect("/homes");
 });
 
 reserveRouter.post("/reserve", (req, res) => {
-  res.redirect("/host/homes-list");
+  res.redirect("/homes");
 });
 
 // GET: Display reservation checkout page for a specific home
@@ -30,7 +30,7 @@ reserveRouter.get("/reserve/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
@@ -62,7 +62,7 @@ reserveRouter.get("/reserve/:id", async (req, res) => {
     res,
     "reserve",
     `Reserve ${home[0].name} | Airbnb`,
-    req.path,
+    req.baseUrl + req.path,
     {
       home: formattedHome,
       reservationDetails: {
@@ -90,7 +90,7 @@ reserveRouter.post("/reserve/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
@@ -139,11 +139,11 @@ reserveRouter.get("/bookings", async (req, res) => {
       req.session.userDetails.id,
     );
 
-    reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
+    reserveController(res, "bookings", "Airbnb | Your bookings", req.baseUrl + req.path, {
       bookings,
     });
   } catch (err) {
-    reserveController(res, "bookings", "Airbnb | Your bookings", req.path, {
+    reserveController(res, "bookings", "Airbnb | Your bookings", req.baseUrl + req.path, {
       bookings: [],
     });
   }
@@ -165,7 +165,7 @@ reserveRouter.get("/bookings/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
@@ -173,7 +173,7 @@ reserveRouter.get("/bookings/:id", async (req, res) => {
     res,
     "booking-details",
     `Booking Details | Airbnb`,
-    req.path,
+    req.baseUrl + req.path,
     {
       booking: singleBooking,
     },

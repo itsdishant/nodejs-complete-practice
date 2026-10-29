@@ -6,7 +6,6 @@ const sharedController =
 const Home = require("../models/homeModel");
 const { renderFormError } = require("../helpers/error-render");
 const { formatInr } = require("../utils/formatter");
-const { homesFor } = require("../helpers/home-data");
 
 const hostRouter = express.Router();
 
@@ -19,7 +18,7 @@ hostRouter.get("/add-home", (req, res) => {
     return res.redirect("/");
   }
 
-  hostController(res, "add-home", "Airbnb | List your home", req.path);
+  hostController(res, "add-home", "Airbnb | List your home", req.baseUrl + req.path);
 });
 
 // POST: Validate and save a new home listing
@@ -80,7 +79,7 @@ hostRouter.post("/add-home", (req, res) => {
         res,
         "add-edit-home-success",
         "Airbnb | Listing published",
-        req.path,
+        req.baseUrl + req.path,
         {
           homeName,
           location,
@@ -112,11 +111,11 @@ hostRouter.get("/edit-home/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
-  hostController(res, "edit-home", `Edit ${home[0].name} | Airbnb`, req.path, {
+  hostController(res, "edit-home", `Edit ${home[0].name} | Airbnb`, req.baseUrl + req.path, {
     homeId: home[0]._id,
     formValues: home[0],
   });
@@ -176,7 +175,7 @@ hostRouter.post("/edit-home/:id", async (req, res) => {
     res,
     "add-edit-home-success",
     "Airbnb | Listing updated",
-    req.path,
+    req.baseUrl + req.path,
     {
       homeName: name,
       location,
@@ -197,39 +196,33 @@ hostRouter.post("/delete-home/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
   await Home.findByIdAndDelete(id);
 
-  res.redirect("/host/host-homes-list");
+  res.redirect("/host/homes");
 });
 
-// GET: Display host homes list table
-hostRouter.get("/host-homes-list", async (req, res) => {
-  const homes = await Home.getAllHomes();
+// GET: Display the signed-in host's own listings
+hostRouter.get("/homes", async (req, res) => {
+  const userDetails = req.session.userDetails;
+  const isLoggedIn = req.session.isLoggedIn;
 
-  hostController(res, "host-home-list", "Airbnb | Your listings", req.path, {
-    homes,
-  });
-});
+  if (!isLoggedIn || !userDetails || userDetails.role !== "host") {
+    return res.redirect("/");
+  }
 
-// GET: Display catalog of all homes, optionally filtered by ?q=
-hostRouter.get("/homes-list", async (req, res) => {
-  const query = String(req.query.q || "").trim();
-  const homes = await homesFor(req);
-  const needle = query.toLowerCase();
-  const matches = needle
-    ? homes.filter((home) =>
-        `${home.name} ${home.location}`.toLowerCase().includes(needle),
-      )
-    : homes;
+  const homes = await Home.getHomesByHost(userDetails.id);
 
-  hostController(res, "homes-list", "Airbnb | Explore stays", req.path, {
-    homes: matches,
-    query,
-  });
+  hostController(
+    res,
+    "host-home-list",
+    "Airbnb | Your listings",
+    req.baseUrl + req.path,
+    { homes },
+  );
 });
 
 module.exports = hostRouter;

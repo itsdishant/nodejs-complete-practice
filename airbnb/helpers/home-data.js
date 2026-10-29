@@ -2,7 +2,7 @@ const Home = require("../models/homeModel");
 const Wishlist = require("../models/wishlistModel");
 
 /**
- * Every home, newest first, with the signed-in guest's wishlist state attached.
+ * Every home, newest first, with the signed-in traveller's wishlist state attached.
  * Shared by the home page and the listings page so both render the same hearts.
  */
 async function homesFor(req) {

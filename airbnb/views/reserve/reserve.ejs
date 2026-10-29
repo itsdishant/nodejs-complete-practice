@@ -57,6 +57,11 @@
         </div>
       </section>
 
+      <% 
+        const user = (typeof userDetails !== "undefined" && userDetails) ||
+          (typeof session !== "undefined" && session && session.userDetails);
+      %>
+
       <!-- Guest Contact Form -->
       <form action="/reserve/<%= home._id %>" method="POST"
         class="w-full space-y-8 rounded-sm border border-pencil bg-white p-6 shadow-sm">
@@ -76,8 +81,8 @@
               <label for="guestName" class="block text-xs font-semibold uppercase text-ink/70">
                 Full name
               </label>
-              <input type="text" id="guestName" name="guestName" required placeholder="e.g. Dishant Kumar"
-                class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
+              <input type="text" id="guestName" name="guestName" required placeholder="Your Full Name"
+                value="<%= user ? user.fullName : '' %>" class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -85,14 +90,14 @@
                 <label for="guestEmail" class="block text-xs font-semibold uppercase text-ink/70">
                   Email address
                 </label>
-                <input type="email" id="guestEmail" name="guestEmail" required placeholder="you@example.com"
-                  class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
+                <input type="email" id="guestEmail" name="guestEmail" required placeholder="Your Email Address" 
+                  value="<%= user ? user.email : '' %>"  class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
               </div>
               <div>
                 <label for="guestPhone" class="block text-xs font-semibold uppercase text-ink/70">
                   Phone number
                 </label>
-                <input type="tel" id="guestPhone" name="guestPhone" required placeholder="+91 98765 43210"
+                <input type="tel" id="guestPhone" name="guestPhone" required placeholder="Your Phone Number"
                   class="mt-1 min-h-11 w-full rounded-sm border border-pencil bg-paper px-3 text-sm text-ink placeholder:text-ink/40 focus:border-coral focus:outline-none" />
               </div>
             </div>
@@ -234,7 +239,7 @@
         Please select a home from our listings to begin a reservation.
       </p>
       <a class="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-coral px-5 text-sm font-semibold text-white transition-colors hover:bg-ink focus-visible:outline-offset-4"
-        href="/host/homes-list">
+        href="/homes">
         Explore stays
       </a>
     </div>

@@ -41,7 +41,7 @@ userRouter.get("/", async (req, res) => {
     res,
     "home",
     "Airbnb | Vacation Rentals & Places to Stay",
-    req.path,
+    req.baseUrl + req.path,
     {
       indianHomes,
       internationalHomes,
@@ -53,7 +53,7 @@ userRouter.get("/", async (req, res) => {
 
 // GET: Display login page
 userRouter.get("/login", (req, res) => {
-  userController(res, "login", "Login to Airbnb", req.path);
+  userController(res, "login", "Login to Airbnb", req.baseUrl + req.path);
 });
 
 // POST: Handle login form submission
@@ -102,6 +102,7 @@ userRouter.post("/login", async (req, res) => {
     id: user._id.toString(),
     role: user.role,
     fullName: user.fullName,
+    email: user.email,
   };
 
   res.redirect("/");
@@ -109,7 +110,7 @@ userRouter.post("/login", async (req, res) => {
 
 // GET: Display signup page
 userRouter.get("/signup", (req, res) => {
-  userController(res, "signup", "Signup to Airbnb", req.path);
+  userController(res, "signup", "Signup to Airbnb", req.baseUrl + req.path);
 });
 
 // POST: Handle signup form submission
@@ -144,7 +145,8 @@ userRouter.post("/signup", async (req, res) => {
     fullName,
     email,
     password,
-    role,
+    // Anything other than an explicit host choice is a traveller account.
+    role: role === "host" ? "host" : "traveller",
   });
 
   newUser
@@ -154,7 +156,7 @@ userRouter.post("/signup", async (req, res) => {
         res,
         "signup-success",
         "Airbnb | Signup Success",
-        req.path,
+        req.baseUrl + req.path,
         {
           fullName,
           email,
@@ -178,13 +180,13 @@ userRouter.get("/wishlist", async (req, res) => {
   const userDetails = req.session.userDetails;
   const isLoggedIn = req.session.isLoggedIn;
 
-  if (!isLoggedIn || userDetails.role !== "guest") {
+  if (!isLoggedIn || userDetails.role !== "traveller") {
     return res.redirect("/");
   }
 
   const wishlistHomes = await Wishlist.getAllWishlists(userDetails.id);
 
-  userController(res, "wishlist", "Airbnb | Wishlist", req.path, {
+  userController(res, "wishlist", "Airbnb | Wishlist", req.baseUrl + req.path, {
     wishlist: wishlistHomes,
   });
 });
@@ -199,7 +201,7 @@ userRouter.get("/home-detail/:id", async (req, res) => {
       res.status(404),
       "404",
       "Airbnb | Page not found",
-      req.path,
+      req.baseUrl + req.path,
     );
   }
 
@@ -219,9 +221,15 @@ userRouter.get("/home-detail/:id", async (req, res) => {
     isFavourite,
   };
 
-  userController(res, "home-detail", `${home[0].name} | Airbnb`, req.path, {
-    home: formattedHome,
-  });
+  userController(
+    res,
+    "home-detail",
+    `${home[0].name} | Airbnb`,
+    req.baseUrl + req.path,
+    {
+      home: formattedHome,
+    },
+  );
 });
 
 // POST: Save or remove favourite / saved home
@@ -230,7 +238,7 @@ userRouter.post("/wishlist/:id", async (req, res) => {
   const userDetails = req.session.userDetails;
   const isLoggedIn = req.session.isLoggedIn;
 
-  if (!isLoggedIn || !userDetails || userDetails.role !== "guest") {
+  if (!isLoggedIn || !userDetails || userDetails.role !== "traveller") {
     return res.redirect("/login");
   }
 
@@ -281,6 +289,29 @@ userRouter.post("/logout", (req, res) => {
     res.clearCookie("connect.sid");
     res.redirect("/login");
   });
+});
+
+// GET: Display catalog of all homes, optionally filtered by ?q=
+userRouter.get("/homes", async (req, res) => {
+  const query = String(req.query.q || "").trim();
+  const homes = await homesFor(req);
+  const needle = query.toLowerCase();
+  const matches = needle
+    ? homes.filter((home) =>
+        `${home.name} ${home.location}`.toLowerCase().includes(needle),
+      )
+    : homes;
+
+  userController(
+    res,
+    "homes-list",
+    "Airbnb | Explore stays",
+    req.baseUrl + req.path,
+    {
+      homes: matches,
+      query,
+    },
+  );
 });
 
 module.exports = userRouter;

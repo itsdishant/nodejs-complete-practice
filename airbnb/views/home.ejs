@@ -22,7 +22,7 @@
         </p>
 
         <form
-          action="/host/homes-list"
+          action="/homes"
           method="GET"
           role="search"
           class="mt-8 flex w-full max-w-2xl items-stretch gap-2 rounded-sm border border-pencil bg-white p-2 shadow-sm transition-colors focus-within:border-ink/40"
@@ -58,7 +58,7 @@
           <% for (const place of places) { %>
           <li class="shrink-0">
             <a
-              href="/host/homes-list?q=<%= encodeURIComponent(place) %>"
+              href="/homes?q=<%= encodeURIComponent(place) %>"
               class="inline-flex items-center rounded-full border border-pencil bg-white px-3.5 py-2 text-xs font-medium text-ink/80 transition-colors hover:border-ink hover:bg-mist hover:text-ink"
             ><%= place %></a>
           </li>
@@ -102,7 +102,7 @@
 
       <div class="mt-12 border-t border-pencil pt-8">
         <a
-          href="/host/homes-list"
+          href="/homes"
           class="inline-flex items-center gap-1.5 text-sm font-semibold text-coral underline underline-offset-4 transition-colors hover:text-ink"
         >
           Browse all <%= total %> stays <span aria-hidden="true">&rarr;</span>

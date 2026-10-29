@@ -28,16 +28,25 @@ homeSchema.post("findOneAndDelete", async function (doc) {
 
 const Home = mongoose.model("Home", homeSchema);
 
+// The shape every listing card and table row expects.
+const toCard = (home) => ({
+  _id: home._id.toString(),
+  name: home.name,
+  location: home.location,
+  price: home.price,
+  url: home.url,
+  formattedPrice: formatInr.format(home.price),
+});
+
 Home.getAllHomes = async function () {
   const homes = await Home.find().sort({ _id: -1 });
-  return homes.map((home) => ({
-    _id: home._id.toString(),
-    name: home.name,
-    location: home.location,
-    price: home.price,
-    url: home.url,
-    formattedPrice: formatInr.format(home.price),
-  }));
+  return homes.map(toCard);
+};
+
+// Only the listings a single host owns, newest first.
+Home.getHomesByHost = async function (hostId) {
+  const homes = await Home.find({ hostId }).sort({ _id: -1 });
+  return homes.map(toCard);
 };
 
 Home.getHomeById = async function (id) {

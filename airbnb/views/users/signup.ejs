@@ -68,12 +68,12 @@
       <div class="grid grid-cols-2 gap-3">
         <label
           class="flex cursor-pointer items-start gap-3 rounded-sm border border-pencil bg-white p-3.5 transition-colors has-checked:border-coral has-checked:bg-coral/5">
-          <input type="radio" name="role" value="guest"
+          <input type="radio" name="role" value="traveller"
             class="mt-0.5 h-4 w-4 accent-coral focus-visible:outline-offset-2" <%=typeof formValues==='undefined'
             || !formValues || formValues.role !=='host' ? 'checked' : '' %>
           />
           <div>
-            <span class="block text-sm font-semibold text-ink">Traveler</span>
+            <span class="block text-sm font-semibold text-ink">Traveller</span>
             <span class="block text-xs text-ink/60">I want to book stays</span>
           </div>
         </label>

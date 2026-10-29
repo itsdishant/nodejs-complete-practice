@@ -98,6 +98,7 @@ Do not introduce `rounded-md` or larger for containers, and do not square off th
 - Compiled into `public/iconoir.css` with a standardized `stroke-width="2"`.
 - Linked in `views/partials/head.ejs` via `<link rel="stylesheet" href="/iconoir.css" />`.
 - Raw inline SVGs and Font Awesome have been completely replaced by Iconoir — the sole exception is the header logo lockup, which inlines Iconoir's `map-pin` (see Logo & Brand Identity).
+- **`hidden` does not work on an icon element.** `iconoir.css` loads unlayered and sets `*[class^='iconoir-'] { display: inline-block }`, which outranks Tailwind's layered utilities. To show or hide an icon, put the `hidden` / `group-open:block` classes on a wrapping `<span>`, never on the `<i class="iconoir-…">` itself.
 - Common icons in use:
   - Navigation: `iconoir-compass` (Explore), `iconoir-calendar` (Bookings), `iconoir-heart` (Wishlist), `iconoir-home` (Your listings), `iconoir-sparks` (Airbnb your home), `iconoir-log-in` (Login), `iconoir-log-out` (Logout).
   - Brand: `map-pin` inlined in the header lockup.
@@ -150,7 +151,7 @@ Non-layout forms — the wishlist toggle and the delete-listing button — are i
 
 ## Component Library
 
-No component framework and no design-system package. Tailwind utilities plus reusable component classes in `styles.css`: `.nav-link`, `.nav-link-active`, and `.no-scrollbar`.
+No component framework and no design-system package. Tailwind utilities plus reusable component classes in `styles.css`: `.nav-link`, `.nav-link-active`, `.nav-cta`, `.nav-cta-active`, and `.no-scrollbar`.
 
 Reusable EJS partials in `views/`:
 
@@ -166,7 +167,7 @@ Reusable EJS partials in `views/`:
 
 Views are fragments only. `controllers/appController.js` renders the fragment, then injects it into `partials/content.ejs` as `body`; page helpers are `homeController`, `hostController`, `reserveController`, `sharedController`, `userController`.
 
-Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` — every home plus the signed-in guest's `isFavourite` — and is the single source for the home page and `/host/homes-list`, so both surfaces render identical hearts.
+Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` — every home plus the signed-in guest's `isFavourite` — and is the single source for the home page and `/homes`, so both surfaces render identical hearts.
 
 ---
 
@@ -176,14 +177,14 @@ Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` 
 - **Navbar Width:** the horizontal gutter lives on the `<header>` (`px-4 sm:px-6`) and the inner `<nav>` is `mx-auto w-full max-w-280` with no padding of its own — the same construction as `<main>` + its `max-w-280` container. That is what keeps the logo flush with the page content at every width (with padding on the nav itself, desktop content sat 24px inside the page grid). `fullWidth` / `fullWidthHeader` switch the nav to `max-w-full`.
 - **Centered pages:** the shell adds `flex items-center justify-center` for `/login`, `/signup`, `/host/add-home`, `/host/edit-home`.
 - **Home page (`views/home.ejs`) — search first, no marketing:** the page opens with an h1 (`text-4xl sm:text-5xl`), one `text-base text-ink/70` line of counts, then the search form. No hero image, no value-prop blocks, no CTA pair.
-  - **Search form:** a real `GET` to `/host/homes-list`, `role="search"`, `max-w-2xl`, `flex items-stretch gap-2 rounded-sm border border-pencil bg-white p-2 shadow-sm` with `focus-within:border-ink/40`. Inside: `iconoir-map-pin` at `text-ink/40`, a borderless `type="search"` input (`min-h-11`, `text-sm`, placeholder `text-ink/40`), and the coral `rounded-sm` submit button. The pill-shaped Airbnb search bar is deliberately not used — `rounded-sm` is the contract.
-  - **Destination chips:** directly under the form (`mt-5`), one horizontally scrolling row (`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0`) of `rounded-full border border-pencil bg-white px-3.5 py-2 text-xs font-medium` links to `/host/homes-list?q=<city>`. Never wrap them into rows — a wrapped block buries the listings. The heading is `sr-only`.
+  - **Search form:** a real `GET` to `/homes`, `role="search"`, `max-w-2xl`, `flex items-stretch gap-2 rounded-sm border border-pencil bg-white p-2 shadow-sm` with `focus-within:border-ink/40`. Inside: `iconoir-map-pin` at `text-ink/40`, a borderless `type="search"` input (`min-h-11`, `text-sm`, placeholder `text-ink/40`), and the coral `rounded-sm` submit button. The pill-shaped Airbnb search bar is deliberately not used — `rounded-sm` is the contract.
+  - **Destination chips:** directly under the form (`mt-5`), one horizontally scrolling row (`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0`) of `rounded-full border border-pencil bg-white px-3.5 py-2 text-xs font-medium` links to `/homes?q=<city>`. Never wrap them into rows — a wrapped block buries the listings. The heading is `sr-only`.
   - **Country rails:** `mt-12 border-t border-pencil pt-8` sections, heading `font-display text-xl sm:text-2xl` with a right-aligned `text-sm text-ink/50` count. The rail is `no-scrollbar -mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:scroll-pl-0 sm:px-0`; each item is `w-[76%] shrink-0 snap-start overflow-hidden rounded-sm border border-pencil bg-white sm:w-[46%] lg:w-[300px]`. `scroll-pl-4` is required or the first card snaps flush to the viewport edge on mobile.
   - Rails render only when non-empty, and the page ends with one coral "Browse all N stays →" link — no second CTA.
   - Data comes from `helpers/home-data.js` (`homesFor(req)`, homes + `isFavourite`), shared with the listings route. India vs. rest-of-world is decided by `FOREIGN_COUNTRY` in `routes/userRouter.js`; destinations are the city segment of `location`, ordered by home count.
 - **Page header:** `border-b border-pencil pb-8`, h1 plus `mt-3 text-base text-ink/70` intro, optional right-aligned action in a `sm:flex-row sm:items-end sm:justify-between` row.
 - **Listing and booking grids:** `grid gap-6 sm:grid-cols-2 lg:grid-cols-4`, items `overflow-hidden rounded-sm border border-pencil bg-white`.
-- **Search results (`/host/homes-list?q=`):** the route matches `q` case-insensitively against `name + location` via `homesFor(req)`. With a query, the count line reads `N stays matching “q”` followed by an inline coral "Clear search" link back to `/host/homes-list`; without one it reads `N homes`. A zero-match query gets its own empty state ("No stays in “q”") with a "Browse all stays" CTA — never the generic empty page.
+- **Search results (`/homes?q=`):** the route matches `q` case-insensitively against `name + location` via `homesFor(req)`. With a query, the count line reads `N stays matching “q”` followed by an inline coral "Clear search" link back to `/homes`; without one it reads `N homes`. A zero-match query gets its own empty state ("No stays in “q”") with a "Browse all stays" CTA — never the generic empty page.
 - **Home Detail Page Layout (`views/users/home-detail.ejs`):**
   - Uses an asymmetric 2-column grid (`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12 xl:gap-16`).
   - **Left Column (`lg:col-span-7 xl:col-span-8`)**:
@@ -208,12 +209,18 @@ Data helpers live in `helpers/`. `helpers/home-data.js` exports `homesFor(req)` 
 Sticky (`sticky top-0 z-40`), solid `bg-cloud` (`#f2f2f2`) with **no border** — the tone step against the white page is the separator. White pills on the grey band are what make the controls read as raised.
 
 - Left: the coral logo lockup — inline Iconoir `map-pin` + `airbnb` wordmark (see Logo & Brand Identity).
-- Right: Uniform `.nav-link` pills with Iconoir icons, plus a User Profile identity badge when authenticated:
-  - **Guest / Authenticated:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), User badge, Logout (`iconoir-log-out`).
-  - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), User badge, Logout (`iconoir-log-out`).
-  - **Logged out:** Login (`iconoir-log-in`).
-  - **User Profile Badge:** `rounded-full border border-pencil bg-paper` pill featuring a dark circular avatar with the user's initial (`bg-ink text-white`), their `fullName` (`text-xs font-semibold text-ink truncate`), and their role as a micro-label (`text-[10px] text-ink/50 uppercase tracking-wider`). Located before Logout.
+- Right, `md` and up: inline `.nav-link` pills, then the identity chip.
+  - **Traveller:** Explore (`iconoir-compass`), Bookings (`iconoir-calendar`), Wishlist (`iconoir-heart`), Logout (`iconoir-log-out`).
+  - **Host:** Your listings (`iconoir-home`), Airbnb your home (`iconoir-sparks`), Logout (`iconoir-log-out`).
+  - **Logged out:** Login (`iconoir-log-in`) only.
+- **Airbnb your home is the one dark control in the chrome.** It uses `.nav-cta` — ink pill, coral icon, hover flips the fill to coral and the icon to white, active is a coral fill with a `rgba(255,90,95,.25)` halo. Every other header control is a white pill, so the host's primary action is the only high-contrast thing in the bar. Do not style a second header item this way.
+- **Identity chip** (authenticated, `md` and up): white `rounded-full` pill, `py-1 pl-1 pr-3.5`, hairline border, `shadow-xs`, hover `border-ink/30`. Inside: a 28px ink avatar holding the initial, with a **coral presence dot** (`h-2.5 w-2.5 rounded-full border-2 border-white bg-coral`, offset `-bottom-0.5 -right-0.5`) that says "signed in"; then the name (`text-xs font-semibold`, truncated at `90px → 120px → 180px`) over the role as a micro-label (`text-[10px] uppercase tracking-[0.14em] text-ink/50`). The dot and the role label both encode the session, which is why the chip carries no icon.
+- **Below `md` the header collapses instead of scrolling.** There is no horizontal scroll strip any more: signed-in users get an avatar + hamburger pill that opens a `<details>` panel (`w-64`, `rounded-sm`, `shadow-lg`) with the identity header (avatar, name, role), a divider, then the same links stacked; the CTA row renders as a filled ink row. Signed-out users get a plain Login pill — a one-item menu would be noise.
+  - The panel is a native `<details>` with `[&::-webkit-details-marker]:hidden`; the hamburger and `iconoir-xmark` swap via `group-open:` on the wrapping `<span>`s. A small inline script closes it on Escape or an outside click.
+  - Both the inline row and the panel render one `links` array defined at the top of the template, so the two layouts can never disagree about a link, its icon, or its active state.
 - All links share a consistent `.nav-link` pill appearance (white pill, `border-pencil` hairline, `text-xs` label, icon, and `rounded-full`). Hover washes to `bg-mist` with an ink border. Active is a solid coral pill (`bg-coral text-white font-semibold`).
+- **`currentPath` is the absolute path** — every route passes `req.baseUrl + req.path`, so mounted routers report `/host/homes`, not `/homes`. Pills compare against the full path. Do not pass bare `req.path`: inside a router mounted at `/host` it silently drops the prefix, which is how the "Your listings" pill once failed to highlight (and how the add/edit-listing forms lost their centering).
+- **Your listings stays active on its sub-pages:** `currentPath === "/host/homes" || currentPath.startsWith("/host/edit-home")`, computed once as `onYourListings` at the top of the header.
 
 ### Buttons
 
