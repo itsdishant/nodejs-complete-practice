@@ -10,6 +10,7 @@ const { renderFormError } = require("../helpers/error-render");
 const Wishlist = require("../models/wishlistModel");
 const { homesFor } = require("../helpers/home-data");
 const { body, validationResult } = require("express-validator");
+const { routeGuard } = require("../middlewares/route-guard");
 
 const userRouter = express.Router();
 
@@ -206,14 +207,8 @@ userRouter.post("/signup", [
 ]);
 
 // GET: Display user's favourite / saved homes
-userRouter.get("/wishlist", async (req, res) => {
+userRouter.get("/wishlist", routeGuard("traveller"), async (req, res) => {
   const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || userDetails.role !== "traveller") {
-    return res.redirect("/");
-  }
-
   const wishlistHomes = await Wishlist.getAllWishlists(userDetails.id);
 
   userController(res, "wishlist", "Airbnb | Wishlist", req.baseUrl + req.path, {
@@ -263,14 +258,9 @@ userRouter.get("/home-detail/:id", async (req, res) => {
 });
 
 // POST: Save or remove favourite / saved home
-userRouter.post("/wishlist/:id", async (req, res) => {
+userRouter.post("/wishlist/:id", routeGuard("traveller"), async (req, res) => {
   const { id } = req.params;
   const userDetails = req.session.userDetails;
-  const isLoggedIn = req.session.isLoggedIn;
-
-  if (!isLoggedIn || !userDetails || userDetails.role !== "traveller") {
-    return res.redirect("/login");
-  }
 
   const existingWishlist = await Wishlist.findOne({
     homeId: id,
@@ -280,29 +270,29 @@ userRouter.post("/wishlist/:id", async (req, res) => {
   const backUrl = req.get("Referrer") || "/wishlist";
 
   if (existingWishlist) {
-    await Wishlist.deleteOne({ homeId: id, userId: userDetails.id });
+    await Wishlist.deleteMany({ homeId: id, userId: userDetails.id });
     return res.redirect(backUrl);
   } else {
-    const newWishlist = new Wishlist({
-      homeId: id,
-      userId: userDetails.id,
-    });
-
-    newWishlist
-      .save()
-      .then(() => {
-        return res.redirect(backUrl);
-      })
-      .catch((error) => {
-        return renderFormError(
-          res,
-          "wishlist",
-          "Airbnb | Wishlist",
-          "user",
-          error.message,
-          req,
-        );
+    try {
+      await Wishlist.create({
+        homeId: id,
+        userId: userDetails.id,
       });
+      return res.redirect(backUrl);
+    } catch (error) {
+      // Competing save: duplicate key error (11000) means already saved
+      if (error.code === 11000) {
+        return res.redirect(backUrl);
+      }
+      return renderFormError(
+        res,
+        "wishlist",
+        "Airbnb | Wishlist",
+        "user",
+        error.message,
+        req,
+      );
+    }
   }
 });
 

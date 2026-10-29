@@ -11,7 +11,6 @@ const app = express();
 const port = 3003;
 
 app.use(express.static(path.join(__dirname, "public")));
-// ponytail: served straight from the installed package so it can't drift from npm.
 app.use(
   "/vendor/notyf",
   express.static(path.join(__dirname, "node_modules/notyf")),

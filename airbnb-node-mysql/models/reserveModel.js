@@ -4,7 +4,6 @@ const { formatInr } = require("../utils/formatter");
 const CLEANING_FEE = 1200;
 const SERVICE_FEE = 850;
 
-// ponytail: no try/catch here — a failed query throws to the error middleware,
 // which renders an error notice instead of silently reporting success.
 class Reserve {
   constructor(
@@ -95,7 +94,6 @@ class Reserve {
       (b.total_amount - CLEANING_FEE - SERVICE_FEE) / nights,
     );
     const nightlyRate = paidNightly > 0 ? paidNightly : b.price || 0;
-    // ponytail: label map, keeps the form's raw values out of the receipt copy.
     const paymentLabels = {
       upi: "UPI",
       card: "Card",

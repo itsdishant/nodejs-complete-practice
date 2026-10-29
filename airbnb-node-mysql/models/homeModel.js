@@ -1,6 +1,5 @@
 const db = require("../utils/database");
 
-// ponytail: no try/catch here — a failed query throws to the error middleware,
 // which renders an error notice instead of silently reporting success.
 module.exports = class Home {
   constructor(homeName, location, price, photo, isFavourite = false) {
